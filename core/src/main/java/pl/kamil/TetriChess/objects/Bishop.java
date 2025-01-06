@@ -3,16 +3,16 @@ package pl.kamil.TetriChess.objects;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 
-public class Pawn implements Figure {
+public class Bishop implements Figure {
     private String figureId;
     private Texture figureTexture;
     private Vector2 position = new Vector2();
     private Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
     private static final int value = 1;
 
-    public Pawn(String pawnId, Texture pawnTexture, float positionX, float positionY, Team team) {
-        this.figureId = pawnId;
-        this.figureTexture = pawnTexture;
+    public Bishop(String bishopId, Texture bishopTexture, float positionX, float positionY, Team team) {
+        this.figureId = bishopId;
+        this.figureTexture = bishopTexture;
         this.position.set(positionX, positionY);
         this.team = team;
     }

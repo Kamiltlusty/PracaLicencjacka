@@ -15,6 +15,9 @@ import pl.kamil.TetriChess.objects.Figure;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.resources.GlobalVariables;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import static pl.kamil.TetriChess.resources.GlobalVariables.*;
 
 public class GameScreen implements Screen, InputProcessor {
@@ -76,6 +79,10 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(Color.BLACK);
+
+//        // set the sprite batch to use the camera
+//        game.batch.setProjectionMatrix(viewport.getCamera().combined);
+
         // begin drawing
         game.batch.begin();
 
@@ -93,23 +100,12 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawFigures() {
-        for (int i = 0; i < BOARD_FIELD_NUM; i++) {
-            for (int j = 0; j < BOARD_FIELD_NUM; j++) {
-                for (int k = 0; k < board.figuresList.size(); k++) {
-                    Figure figure;
-                    Field field = board.getFieldsMap().get("A1");
-                    if (board.figuresList.get(k) != null) figure = board.figuresList.get(k);
-                    else continue;
-
-                    if (i == figure.getPosition().y &&
-                        j == figure.getPosition().x) {
-                        drawFigure(j, i, field, figure);
-                        System.out.printf("figura %f, %f%n", figure.getPosition().x, figure.getPosition().y);
-                        break;
-                    }
-
-                }
-            }
+        for (int k = 0; k < board.figuresList.size(); k++) {
+            Figure figure;
+            Field field = board.getFieldsMap().get("A1");
+            if (board.figuresList.get(k) != null) figure = board.figuresList.get(k);
+            else continue;
+            drawFigure(field, figure);
         }
     }
 
@@ -211,41 +207,42 @@ public class GameScreen implements Screen, InputProcessor {
             for (int j = 0; j < BOARD_FIELD_NUM; j++) {
                 String fieldSignature = findFieldSignature(i, j);
                 Field field = board.getFieldsMap().get(fieldSignature);
-                drawField(field.getPosition().x * field.getPosition().getWidth(), field.getPosition().y * field.getFieldTexture().getWidth(), field);
+                drawField(field);
             }
         }
     }
+
     /**
      * i oraz j nie sa w tej funkjci powiazane ze wspolrzednymi,
      * dlatego sa intami i nie sa ustawione w kolejnosci float j, float i
+     *
      * @param i
      * @param j
      * @return
      */
     private String findFieldSignature(int i, int j) {
         char letter = (char) ('A' + j);
-        int idNum = 8 - i;
-        return new StringBuilder().append(letter).append(idNum).toString();
+        return new StringBuilder().append(letter).append(i + 1).toString();
     }
 
 
-    private void drawField(float j, float i, Field field) {
+    private void drawField(Field field) {
         game.batch.draw(
             field.getFieldTexture(),
-            j,
-            i,
-            field.getPosition().getWidth(),
-            field.getPosition().getHeight()
+            field.getPosition().x * field.getFieldTexture().getWidth(),
+            field.getPosition().y * field.getFieldTexture().getHeight(),
+            field.getFieldTexture().getWidth(),
+            field.getFieldTexture().getHeight()
         );
     }
 
-    private void drawFigure(float j, float i, Field field, Figure figure) {
+    private void drawFigure(Field field, Figure figure) {
         game.batch.draw(
             figure.getFigureTexture(),
-            j * field.getFieldTexture().getWidth(),
-            i * field.getFieldTexture().getHeight(),
-            figure.getFigureTexture().getWidth() * WORLD_SCALE,
-            figure.getFigureTexture().getHeight() * WORLD_SCALE
+            figure.getPosition().x * field.getFieldTexture().getWidth(),
+            figure.getPosition().y * field.getFieldTexture().getHeight(),
+            figure.getFigureTexture().getWidth() * 0.7f,
+            figure.getFigureTexture().getHeight() * 0.7f
         );
     }
 
@@ -293,31 +290,84 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        // Reverse of Y for screen counting from left top corner to left bottom
+        float screenHeight = Gdx.graphics.getHeight();
+        int transformedY = (int)(screenHeight - screenY);
+
         // mark/search for marked field
-        System.out.println("{%d},{%d},{%d}".formatted(screenX, screenY, button));
-        String foundSignature = board.findFieldSignatureByScreenCoordinates(screenX, screenY);
-        System.out.println(foundSignature);
+        String foundSignature = board.findFieldSignatureByScreenCoordinates(screenX, transformedY);
         Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-        System.out.println(fieldCoordinates);
-        board.findFigureByCoordinatesAndErase(fieldCoordinates.x, fieldCoordinates.y);
+        // finding pawn
+        board.findFigureByCoordinates(fieldCoordinates.x, fieldCoordinates.y);
+        // remembering pointer position
+        board.setPointerPosition(screenX, transformedY);
+        board.setInitialPointerPosition(board.getPointerPosition().x, board.getPointerPosition().y);
+        System.out.println("initial before" + board.getInitialPointerPosition().x + ", " + board.getInitialPointerPosition().y);
 
         return false;
     }
 
     @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        // Reverse of Y for screen counting from left top corner to left bottom
+        float screenHeight = Gdx.graphics.getHeight();
+        float transformedY = screenHeight - screenY;
+
+        Optional<Figure> selectedFigure = board.getSelectedFigure();
+        // counting difference between two pointer positions
+
+        Vector2 newTouch = new Vector2(screenX, transformedY);
+        System.out.println("aktualny: " + board.getPointerPosition().x + ", " + board.getPointerPosition().y);
+        System.out.println("nowy: " + newTouch.x + ", " + newTouch.y);
+
+        Vector2 delta = newTouch.cpy().sub(board.getPointerPosition());
+        System.out.println("delta" + delta.x + ", " + delta.y);
+        Texture fieldTexture = board.getFieldsMap().get("A1").getFieldTexture();
+
+        selectedFigure.ifPresent(figure -> figure.setPosition(
+            figure.getPosition().x + delta.x / fieldTexture.getWidth(),
+            figure.getPosition().y + delta.y / fieldTexture.getHeight()));
+        board.setPointerPosition(newTouch.x, newTouch.y);
         return false;
     }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        // Reverse of Y for screen counting from left top corner to left bottom
+        float screenHeight = Gdx.graphics.getHeight();
+        int transformedY = (int)(screenHeight - screenY);
+
+        // search for field to drop figure
+        String foundSignature = board.findFieldSignatureByScreenCoordinates(screenX, transformedY);
+        if (!Objects.equals(foundSignature, "-1")) {
+            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
+
+            Optional<Figure> selectedFigure = board.getSelectedFigure();
+            selectedFigure.ifPresent(figure -> figure.setPosition(
+                fieldCoordinates.x,
+                fieldCoordinates.y
+            ));
+        } else {
+            Optional<Figure> selectedFigure = board.getSelectedFigure();
+            // to make figure come back it needs to be set with field coordinates to become normalized and not go outside chessboard
+            foundSignature = board.findFieldSignatureByScreenCoordinates((int)board.getInitialPointerPosition().x, (int)board.getInitialPointerPosition().y);
+            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
+            System.out.println("initial after field coordinates" + fieldCoordinates.x + ", " + fieldCoordinates.y);
+            selectedFigure.ifPresent(figure -> figure.setPosition(
+                fieldCoordinates.x,
+                fieldCoordinates.y
+            ));
+        }
+        board.setSelectedFigureAsEmpty();
+        return false;
+    }
+
 
     @Override
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
         return false;
     }
 
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return false;
-    }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {

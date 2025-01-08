@@ -4,17 +4,18 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.resources.Assets;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static pl.kamil.TetriChess.resources.GlobalVariables.BOARD_FIELD_NUM;
+import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_SCALE;
 
 public class Board {
     public final Map<String, Field> fieldsMap;
     public final List<Figure> figuresList;
     private final Assets assets;
+    private Optional<Figure> selectedFigure;
+    private Vector2 initialPointerPosition;
+    private Vector2 pointerPosition;
 
 
     // fields textures
@@ -29,10 +30,26 @@ public class Board {
     private Texture king_texture;
     private Texture queen_texture;
 
+
+    public Vector2 getInitialPointerPosition() {
+        return initialPointerPosition;
+    }
+
+    public void setInitialPointerPosition(float x, float y) {
+        this.initialPointerPosition.x = x;
+        this.initialPointerPosition.y = y;
+    }
+
     public Board(Assets assets) {
         figuresList = new ArrayList<>();
         fieldsMap = new HashMap<>();
         this.assets = assets;
+
+        // set selected figure as empty
+        this.selectedFigure = Optional.empty();
+        // initialize mouse pointer
+        this.pointerPosition = new Vector2();
+        this.initialPointerPosition = new Vector2();
         // crate textures
         initializeBoardFields();
         initializeFigures();
@@ -114,12 +131,13 @@ public class Board {
         return new Vector2(x, y);
     }
 
-    public void findFigureByCoordinatesAndErase(float x, float y) {
+
+    public void findFigureByCoordinates(float x, float y) {
         // find figure by coordinates
         for (int i = 0; i < figuresList.size(); i++) {
             if (x == figuresList.get(i).getPosition().x &&
                 y == figuresList.get(i).getPosition().y) {
-                figuresList.get(i).setPosition(0, 0);
+                selectedFigure = Optional.ofNullable(figuresList.get(i));
             }
         }
     }
@@ -382,21 +400,35 @@ public class Board {
      */
     private String findFieldSignature(int i, int j) {
         char letter = (char) ('A' + j);
-        int idNum = 8 - i;
-        return new StringBuilder().append(letter).append(idNum).toString();
+        return new StringBuilder().append(letter).append(i + 1).toString();
     }
     public String findFieldSignatureByScreenCoordinates(int screenX, int screenY) {
-        int i = screenX / black_field_texture.getHeight();
-        int j = screenY / black_field_texture.getWidth();
-        char letter = (char) ('A' + j);
-        int idNum = i + 1; // tutaj i jest obliczane z ekranu dlatego nie musze odejmowac od 8
-        String string = new StringBuilder().append(letter).append(idNum).toString();
-        System.out.println(string);
-        return string;
+        int j = screenX / black_field_texture.getWidth();
+        int i = screenY / black_field_texture.getHeight();
+        if (j >= 0 && j < 8 && i >= 0 && i < 8) {
+            char letter = (char) ('A' + j);
+            int idNum = i + 1; // tutaj i jest obliczane z ekranu dlatego nie musze odejmowac od 8
+            return new StringBuilder().append(letter).append(idNum).toString();
+        } else return "-1";
+    }
+
+    public void setSelectedFigureAsEmpty() {
+        this.selectedFigure = Optional.empty();
+    }
+
+    public Optional<Figure> getSelectedFigure() {
+        return selectedFigure;
     }
 
     public Map<String, Field> getFieldsMap() {
         return fieldsMap;
     }
 
+    public Vector2 getPointerPosition() {
+        return pointerPosition;
+    }
+
+    public void setPointerPosition(float x, float y) {
+        this.pointerPosition.set(x, y);
+    }
 }

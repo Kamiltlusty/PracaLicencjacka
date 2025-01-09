@@ -292,7 +292,7 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Reverse of Y for screen counting from left top corner to left bottom
         float screenHeight = Gdx.graphics.getHeight();
-        int transformedY = (int)(screenHeight - screenY);
+        int transformedY = (int) (screenHeight - screenY);
 
         // mark/search for marked field
         String foundSignature = board.findFieldSignatureByScreenCoordinates(screenX, transformedY);
@@ -302,6 +302,7 @@ public class GameScreen implements Screen, InputProcessor {
         // remembering pointer position
         board.setPointerPosition(screenX, transformedY);
         board.setInitialPointerPosition(board.getPointerPosition().x, board.getPointerPosition().y);
+        board.setInitialFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
         System.out.println("initial before" + board.getInitialPointerPosition().x + ", " + board.getInitialPointerPosition().y);
 
         return false;
@@ -333,31 +334,44 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        // Reverse of Y for screen counting from left top corner to left bottom
+        // Reverse of Y for screen counting from left top corner changed to left bottom
         float screenHeight = Gdx.graphics.getHeight();
-        int transformedY = (int)(screenHeight - screenY);
+        int transformedY = (int) (screenHeight - screenY);
 
+
+        boolean allValid = true;
         // search for field to drop figure
         String foundSignature = board.findFieldSignatureByScreenCoordinates(screenX, transformedY);
         if (!Objects.equals(foundSignature, "-1")) {
             Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
+            board.setFinalFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
 
             Optional<Figure> selectedFigure = board.getSelectedFigure();
-            selectedFigure.ifPresent(figure -> figure.setPosition(
-                fieldCoordinates.x,
-                fieldCoordinates.y
-            ));
-        } else {
+            Field field = board.getFieldsMap().get("A1");
+            if (selectedFigure.isPresent() && selectedFigure.get().isMoveLegal(
+                    board.getInitialFieldPosition(),
+                    board.getFinalFieldPosition(),
+                    selectedFigure.get(),
+                    field
+                )) {
+                    selectedFigure.get().setPosition(
+                            fieldCoordinates.x,
+                            fieldCoordinates.y
+                    );
+                } else allValid = false;
+        } else allValid = false;
+
+        if (!allValid) {
             Optional<Figure> selectedFigure = board.getSelectedFigure();
             // to make figure come back it needs to be set with field coordinates to become normalized and not go outside chessboard
-            foundSignature = board.findFieldSignatureByScreenCoordinates((int)board.getInitialPointerPosition().x, (int)board.getInitialPointerPosition().y);
+            foundSignature = board.findFieldSignatureByScreenCoordinates((int) board.getInitialPointerPosition().x, (int) board.getInitialPointerPosition().y);
             Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-            System.out.println("initial after field coordinates" + fieldCoordinates.x + ", " + fieldCoordinates.y);
             selectedFigure.ifPresent(figure -> figure.setPosition(
                 fieldCoordinates.x,
                 fieldCoordinates.y
             ));
         }
+
         board.setSelectedFigureAsEmpty();
         return false;
     }

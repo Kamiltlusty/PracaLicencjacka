@@ -18,8 +18,44 @@ public class Rook implements Figure {
     }
 
     @Override
-    public void move() {
+    public boolean isMoveLegal(Vector2 initialPosition,
+                               Vector2 finalPosition,
+                               Figure selectedFigure,
+                               Field field
+    ) {
+        boolean isLegal = true;
+        // transition
+        isLegal = isTransitionLegal(initialPosition, finalPosition);
+        // beating
 
+        return isLegal;
+    }
+
+    private boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
+        boolean isLegal = true;
+
+        float moveDistanceX = finalPosition.x - initialPosition.x;
+        float moveDistanceY = finalPosition.y - initialPosition.y;
+        //noinspection DuplicatedCode
+        if (!(moveDistanceX == 1.0 && moveDistanceY == 0.0 || moveDistanceX == -1.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 2.0 && moveDistanceY == 0.0 || moveDistanceX == -2.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 3.0 && moveDistanceY == 0.0 || moveDistanceX == -3.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 4.0 && moveDistanceY == 0.0 || moveDistanceX == -4.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 5.0 && moveDistanceY == 0.0 || moveDistanceX == -5.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 6.0 && moveDistanceY == 0.0 || moveDistanceX == -6.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 7.0 && moveDistanceY == 0.0 || moveDistanceX == -7.0 && moveDistanceY == 0.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 1.0 || moveDistanceX == 0.0 && moveDistanceY == -1.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 2.0 || moveDistanceX == 0.0 && moveDistanceY == -2.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 3.0 || moveDistanceX == 0.0 && moveDistanceY == -3.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 4.0 || moveDistanceX == 0.0 && moveDistanceY == -4.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 5.0 || moveDistanceX == 0.0 && moveDistanceY == -5.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 6.0 || moveDistanceX == 0.0 && moveDistanceY == -6.0 ||
+            moveDistanceX == 0.0 && moveDistanceY == 7.0 || moveDistanceX == 0.0 && moveDistanceY == -7.0
+        )) {
+            isLegal = false;
+        }
+
+        return isLegal;
     }
 
     @Override

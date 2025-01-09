@@ -10,12 +10,15 @@ import static pl.kamil.TetriChess.resources.GlobalVariables.BOARD_FIELD_NUM;
 import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_SCALE;
 
 public class Board {
-    public final Map<String, Field> fieldsMap;
+    private final Map<String, Field> fieldsMap;
     public final List<Figure> figuresList;
     private final Assets assets;
     private Optional<Figure> selectedFigure;
     private Vector2 initialPointerPosition;
     private Vector2 pointerPosition;
+    private Vector2 initialFieldPosition;
+    private Vector2 finalFieldPosition;
+
 
 
     // fields textures
@@ -40,6 +43,24 @@ public class Board {
         this.initialPointerPosition.y = y;
     }
 
+    public Vector2 getInitialFieldPosition() {
+        return initialFieldPosition;
+    }
+
+    public Vector2 getFinalFieldPosition() {
+        return finalFieldPosition;
+    }
+
+    public void setInitialFieldPosition(float x, float y) {
+        this.initialFieldPosition.x = x;
+        this.initialFieldPosition.y = y;
+    }
+
+    public void setFinalFieldPosition(float x, float y) {
+        this.finalFieldPosition.x = x;
+        this.finalFieldPosition.y = y;
+    }
+
     public Board(Assets assets) {
         figuresList = new ArrayList<>();
         fieldsMap = new HashMap<>();
@@ -50,6 +71,8 @@ public class Board {
         // initialize mouse pointer
         this.pointerPosition = new Vector2();
         this.initialPointerPosition = new Vector2();
+        this.initialFieldPosition = new Vector2();
+        this.finalFieldPosition = new Vector2();
         // crate textures
         initializeBoardFields();
         initializeFigures();
@@ -229,12 +252,12 @@ public class Board {
         );
     }
 
-    private void setPlayerKnights() {
+    private void setPlayerBishops() {
         int i = 0;
         int j = 2;
         String fieldSignature = findFieldSignature(i, j);
         int idNum = j + 1;
-        figuresList.add(new Knigth(
+        figuresList.add(new Bishop(
                 "b" + idNum, // zle
                 bishop_texture,
                 fieldsMap.get(fieldSignature).getPosition().x,
@@ -245,7 +268,7 @@ public class Board {
         j = 5;
         fieldSignature = findFieldSignature(i, j);
         idNum = j + 1;
-        figuresList.add(new Knigth(
+        figuresList.add(new Bishop(
                 "b" + idNum, // zle
                 bishop_texture,
                 fieldsMap.get(fieldSignature).getPosition().x,
@@ -256,7 +279,7 @@ public class Board {
     }
 
 
-    private void setPlayerBishops() {
+    private void setPlayerKnights() {
         int i = 0;
         int j = 1;
         String fieldSignature = findFieldSignature(i, j);

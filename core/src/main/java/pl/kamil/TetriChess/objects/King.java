@@ -18,8 +18,12 @@ public class King implements Figure {
     }
 
     @Override
-    public void move() {
-
+    public boolean isMoveLegal(Vector2 initialPosition,
+                               Vector2 finalPosition,
+                               Figure selectedFigure,
+                               Field field
+    ) {
+        return true;
     }
 
     public String getFigureId() {

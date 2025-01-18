@@ -7,7 +7,6 @@ import pl.kamil.TetriChess.resources.Assets;
 import java.util.*;
 
 import static pl.kamil.TetriChess.resources.GlobalVariables.BOARD_FIELD_NUM;
-import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_SCALE;
 
 public class Board {
     private final Map<String, Field> fieldsMap;
@@ -20,18 +19,23 @@ public class Board {
     private Vector2 finalFieldPosition;
 
 
-
     // fields textures
     private Texture white_field_texture;
     private Texture black_field_texture;
 
     // figures textures
-    private Texture pawn_texture;
-    private Texture rook_texture;
-    private Texture knight_texture;
-    private Texture bishop_texture;
-    private Texture king_texture;
-    private Texture queen_texture;
+    private Texture pawn_texture_white;
+    private Texture rook_texture_white;
+    private Texture knight_texture_white;
+    private Texture bishop_texture_white;
+    private Texture king_texture_white;
+    private Texture queen_texture_white;
+    private Texture pawn_texture_black;
+    private Texture rook_texture_black;
+    private Texture knight_texture_black;
+    private Texture bishop_texture_black;
+    private Texture king_texture_black;
+    private Texture queen_texture_black;
 
 
     public Vector2 getInitialPointerPosition() {
@@ -83,18 +87,24 @@ public class Board {
     }
 
     private void initializeFigures() {
-        pawn_texture = assets.manager.get(Assets.PAWN_TEXTURE);
-        rook_texture = assets.manager.get(Assets.ROOK_TEXTURE);
-        knight_texture = assets.manager.get(Assets.KNIGHT_TEXTURE);
-        bishop_texture = assets.manager.get(Assets.BISHOP_TEXTURE);
-        king_texture = assets.manager.get(Assets.KING_TEXTURE);
-        queen_texture = assets.manager.get(Assets.QUEEN_TEXTURE);
+        pawn_texture_white = assets.manager.get(Assets.PAWN_TEXTURE_WHITE);
+        rook_texture_white = assets.manager.get(Assets.ROOK_TEXTURE_WHITE);
+        knight_texture_white = assets.manager.get(Assets.KNIGHT_TEXTURE_WHITE);
+        bishop_texture_white = assets.manager.get(Assets.BISHOP_TEXTURE_WHITE);
+        king_texture_white = assets.manager.get(Assets.KING_TEXTURE_WHITE);
+        queen_texture_white = assets.manager.get(Assets.QUEEN_TEXTURE_WHITE);
+        pawn_texture_black = assets.manager.get(Assets.PAWN_TEXTURE_BLACK);
+        rook_texture_black = assets.manager.get(Assets.ROOK_TEXTURE_BLACK);
+        knight_texture_black = assets.manager.get(Assets.KNIGHT_TEXTURE_BLACK);
+        bishop_texture_black = assets.manager.get(Assets.BISHOP_TEXTURE_BLACK);
+        king_texture_black = assets.manager.get(Assets.KING_TEXTURE_BLACK);
+        queen_texture_black = assets.manager.get(Assets.QUEEN_TEXTURE_BLACK);
     }
 
 
     public void initializeBoardFields() {
-        black_field_texture = assets.manager.get(Assets.BLACK_FIELD_TEXTURE);
-        white_field_texture = assets.manager.get(Assets.WHITE_FIELD_TEXTURE);
+        black_field_texture = assets.manager.get(Assets.FIELD_TEXTURE_BLACK);
+        white_field_texture = assets.manager.get(Assets.FIELD_TEXTURE_WHITE);
     }
 
     public void setFieldsMap() {
@@ -164,6 +174,16 @@ public class Board {
             }
         }
     }
+    public Optional<Figure> findFigureByCoordinatesAndReturn(float x, float y) {
+        // find figure by coordinates
+        for (int i = 0; i < figuresList.size(); i++) {
+            if (x == figuresList.get(i).getPosition().x &&
+                y == figuresList.get(i).getPosition().y) {
+                return Optional.ofNullable(figuresList.get(i));
+            }
+        }
+        return Optional.empty();
+    }
 
 
     private void setOpponentQueen() {
@@ -173,7 +193,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Queen(
                 "Q" + idNum, // zle
-                queen_texture,
+                queen_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -188,7 +208,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Queen(
                 "Q" + idNum, // zle
-                queen_texture,
+                queen_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
@@ -203,13 +223,14 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new King(
                 "K" + idNum, // zle
-                king_texture,
+                king_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
             )
         );
     }
+
     private void setOpponentKing() {
         int i = 7;
         int j = 4;
@@ -217,7 +238,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new King(
                 "K" + idNum, // zle
-                king_texture,
+                king_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -233,7 +254,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Bishop(
                 "b" + idNum, // zle
-                bishop_texture,
+                bishop_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -244,7 +265,7 @@ public class Board {
         idNum = j + 1;
         figuresList.add(new Bishop(
                 "b" + idNum, // zle
-                bishop_texture,
+                bishop_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -259,7 +280,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Bishop(
                 "b" + idNum, // zle
-                bishop_texture,
+                bishop_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
@@ -270,7 +291,7 @@ public class Board {
         idNum = j + 1;
         figuresList.add(new Bishop(
                 "b" + idNum, // zle
-                bishop_texture,
+                bishop_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
@@ -286,7 +307,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Knigth(
                 "k" + idNum, // zle
-                knight_texture,
+                knight_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
@@ -297,7 +318,7 @@ public class Board {
         idNum = j + 1;
         figuresList.add(new Knigth(
                 "k" + idNum, // zle
-                knight_texture,
+                knight_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
@@ -312,7 +333,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Knigth(
                 "k" + idNum, // zle
-                knight_texture,
+                knight_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -323,7 +344,7 @@ public class Board {
         idNum = j + 1;
         figuresList.add(new Knigth(
                 "k" + idNum, // zle
-                knight_texture,
+                knight_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -338,7 +359,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Rook(
                 "r" + idNum, // zle
-                rook_texture,
+                rook_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
@@ -349,13 +370,14 @@ public class Board {
         idNum = j + 1;
         figuresList.add(new Rook(
                 "r" + idNum, // zle
-                rook_texture,
+                rook_texture_white,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.WHITE
             )
         );
     }
+
     private void setOpponentRooks() {
         int i = 7;
         int j = 0;
@@ -363,7 +385,7 @@ public class Board {
         int idNum = j + 1;
         figuresList.add(new Rook(
                 "r" + idNum,
-                rook_texture,
+                rook_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -374,7 +396,7 @@ public class Board {
         idNum = j + 1;
         figuresList.add(new Rook(
                 "r" + idNum,
-                rook_texture,
+                rook_texture_black,
                 fieldsMap.get(fieldSignature).getPosition().x,
                 fieldsMap.get(fieldSignature).getPosition().y,
                 Team.BLACK
@@ -388,11 +410,11 @@ public class Board {
             String fieldSignature = findFieldSignature(i, j);
             int idNum = j + 1;
             figuresList.add(new Pawn(
-                "p" + idNum,
-                pawn_texture,
-                fieldsMap.get(fieldSignature).getPosition().x,
-                fieldsMap.get(fieldSignature).getPosition().y,
-                Team.BLACK
+                    "p" + idNum,
+                    pawn_texture_black,
+                    fieldsMap.get(fieldSignature).getPosition().x,
+                    fieldsMap.get(fieldSignature).getPosition().y,
+                    Team.BLACK
                 )
             );
         }
@@ -404,11 +426,11 @@ public class Board {
             String fieldSignature = findFieldSignature(i, j);
             int idNum = j + 1;
             figuresList.add(new Pawn(
-                "p" + idNum,
-                pawn_texture,
-                fieldsMap.get(fieldSignature).getPosition().x,
-                fieldsMap.get(fieldSignature).getPosition().y,
-                Team.WHITE
+                    "p" + idNum,
+                    pawn_texture_white,
+                    fieldsMap.get(fieldSignature).getPosition().x,
+                    fieldsMap.get(fieldSignature).getPosition().y,
+                    Team.WHITE
                 )
             );
         }
@@ -417,6 +439,7 @@ public class Board {
     /**
      * i oraz j nie sa w tej funkjci powiazane ze wspolrzednymi,
      * dlatego sa intami i nie sa ustawione w kolejnosci float j, float i
+     *
      * @param i
      * @param j
      * @return
@@ -425,9 +448,19 @@ public class Board {
         char letter = (char) ('A' + j);
         return new StringBuilder().append(letter).append(i + 1).toString();
     }
+
     public String findFieldSignatureByScreenCoordinates(int screenX, int screenY) {
         int j = screenX / black_field_texture.getWidth();
         int i = screenY / black_field_texture.getHeight();
+        if (j >= 0 && j < 8 && i >= 0 && i < 8) {
+            char letter = (char) ('A' + j);
+            int idNum = i + 1; // tutaj i jest obliczane z ekranu dlatego nie musze odejmowac od 8
+            return new StringBuilder().append(letter).append(idNum).toString();
+        } else return "-1";
+    }
+    public String findFieldSignatureByCoordinates(int posX, int posY) {
+        int j = posX;
+        int i = posY;
         if (j >= 0 && j < 8 && i >= 0 && i < 8) {
             char letter = (char) ('A' + j);
             int idNum = i + 1; // tutaj i jest obliczane z ekranu dlatego nie musze odejmowac od 8

@@ -13,7 +13,6 @@ import pl.kamil.TetriChess.objects.Board;
 import pl.kamil.TetriChess.objects.Field;
 import pl.kamil.TetriChess.objects.Figure;
 import pl.kamil.TetriChess.resources.Assets;
-import pl.kamil.TetriChess.resources.GlobalVariables;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -241,8 +240,8 @@ public class GameScreen implements Screen, InputProcessor {
             figure.getFigureTexture(),
             figure.getPosition().x * field.getFieldTexture().getWidth(),
             figure.getPosition().y * field.getFieldTexture().getHeight(),
-            figure.getFigureTexture().getWidth() * 0.7f,
-            figure.getFigureTexture().getHeight() * 0.7f
+            figure.getFigureTexture().getWidth() * 0.95f,
+            figure.getFigureTexture().getHeight() * 0.95f
         );
     }
 
@@ -342,23 +341,26 @@ public class GameScreen implements Screen, InputProcessor {
         boolean allValid = true;
         // search for field to drop figure
         String foundSignature = board.findFieldSignatureByScreenCoordinates(screenX, transformedY);
+        // check if field was found
         if (!Objects.equals(foundSignature, "-1")) {
             Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
             board.setFinalFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
 
             Optional<Figure> selectedFigure = board.getSelectedFigure();
-            Field field = board.getFieldsMap().get("A1");
-            if (selectedFigure.isPresent() && selectedFigure.get().isMoveLegal(
+//            Field field = board.getFieldsMap().get("A1");
+            if (selectedFigure.isPresent() &&
+                selectedFigure.get().isMoveLegal(
                     board.getInitialFieldPosition(),
                     board.getFinalFieldPosition(),
                     selectedFigure.get(),
-                    field
-                )) {
-                    selectedFigure.get().setPosition(
-                            fieldCoordinates.x,
-                            fieldCoordinates.y
-                    );
-                } else allValid = false;
+                    board
+                    )
+            ) {
+                selectedFigure.get().setPosition(
+                    fieldCoordinates.x,
+                    fieldCoordinates.y
+                );
+            } else allValid = false;
         } else allValid = false;
 
         if (!allValid) {

@@ -8,16 +8,22 @@ public class Assets {
     public final AssetManager manager = new AssetManager();
 
     // figures
-    public static final String KING_TEXTURE = "textures/king.png";
-    public static final String PAWN_TEXTURE = "textures/pawn.png";
-    public static final String KNIGHT_TEXTURE = "textures/knight.png";
-    public static final String QUEEN_TEXTURE = "textures/queen.png";
-    public static final String ROOK_TEXTURE = "textures/rook.png";
-    public static final String BISHOP_TEXTURE = "textures/bishop.png";
+    public static final String KING_TEXTURE_WHITE = "textures/figures/king_white.png";
+    public static final String PAWN_TEXTURE_WHITE = "textures/figures/pawn_white.png";
+    public static final String KNIGHT_TEXTURE_WHITE = "textures/figures/knight_white.png";
+    public static final String QUEEN_TEXTURE_WHITE = "textures/figures/queen_white.png";
+    public static final String ROOK_TEXTURE_WHITE = "textures/figures/rook_white.png";
+    public static final String BISHOP_TEXTURE_WHITE = "textures/figures/bishop_white.png";
+    public static final String KING_TEXTURE_BLACK = "textures/figures/king_black.png";
+    public static final String PAWN_TEXTURE_BLACK = "textures/figures/pawn_black.png";
+    public static final String KNIGHT_TEXTURE_BLACK = "textures/figures/knight_black.png";
+    public static final String QUEEN_TEXTURE_BLACK = "textures/figures/queen_black.png";
+    public static final String ROOK_TEXTURE_BLACK = "textures/figures/rook_black.png";
+    public static final String BISHOP_TEXTURE_BLACK = "textures/figures/bishop_black.png";
 
     // fields
-    public static final String WHITE_FIELD_TEXTURE = "textures/white_field.png";
-    public static final String BLACK_FIELD_TEXTURE = "textures/gray_field.png";
+    public static final String FIELD_TEXTURE_WHITE = "textures/fields/field_white.png";
+    public static final String FIELD_TEXTURE_BLACK = "textures/fields/field_black.png";
     public static final String MAJOR_FIELD_TEXTURE = "textures/major_field.png";
     public static final String MINOR_FIELD_TEXTURE = "textures/minor_field.png";
 
@@ -36,14 +42,20 @@ public class Assets {
     }
 
     private void loadGameplayAssets() {
-        manager.load(KING_TEXTURE, Texture.class);
-        manager.load(PAWN_TEXTURE, Texture.class);
-        manager.load(KNIGHT_TEXTURE, Texture.class);
-        manager.load(QUEEN_TEXTURE, Texture.class);
-        manager.load(ROOK_TEXTURE, Texture.class);
-        manager.load(BISHOP_TEXTURE, Texture.class);
-        manager.load(WHITE_FIELD_TEXTURE, Texture.class);
-        manager.load(BLACK_FIELD_TEXTURE, Texture.class);
+        manager.load(KING_TEXTURE_WHITE, Texture.class);
+        manager.load(PAWN_TEXTURE_WHITE, Texture.class);
+        manager.load(KNIGHT_TEXTURE_WHITE, Texture.class);
+        manager.load(QUEEN_TEXTURE_WHITE, Texture.class);
+        manager.load(ROOK_TEXTURE_WHITE, Texture.class);
+        manager.load(BISHOP_TEXTURE_WHITE, Texture.class);
+        manager.load(KING_TEXTURE_BLACK, Texture.class);
+        manager.load(PAWN_TEXTURE_BLACK, Texture.class);
+        manager.load(KNIGHT_TEXTURE_BLACK, Texture.class);
+        manager.load(QUEEN_TEXTURE_BLACK, Texture.class);
+        manager.load(ROOK_TEXTURE_BLACK, Texture.class);
+        manager.load(BISHOP_TEXTURE_BLACK, Texture.class);
+        manager.load(FIELD_TEXTURE_WHITE, Texture.class);
+        manager.load(FIELD_TEXTURE_BLACK, Texture.class);
         manager.load(MAJOR_FIELD_TEXTURE, Texture.class);
         manager.load(MINOR_FIELD_TEXTURE, Texture.class);
         manager.load(ONE_TEXTURE, Texture.class);

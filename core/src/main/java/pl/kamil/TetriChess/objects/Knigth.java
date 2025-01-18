@@ -2,8 +2,12 @@ package pl.kamil.TetriChess.objects;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import io.vavr.Tuple2;
 
-public class Knigth implements Figure {
+import java.util.Objects;
+import java.util.Optional;
+
+public class Knigth extends Figure {
     private String figureId;
     private Texture figureTexture;
     private Vector2 position = new Vector2();
@@ -21,9 +25,63 @@ public class Knigth implements Figure {
     public boolean isMoveLegal(Vector2 initialPosition,
                                Vector2 finalPosition,
                                Figure selectedFigure,
-                               Field field
+                               Board board
     ) {
-        return true;
+        // transition
+        boolean isLegal = true;
+        isLegal = isTransitionLegal(initialPosition, finalPosition);
+        if (!isLegal) return false;
+        // checking if smth is standing on path
+        Tuple2<Vector2, Boolean> isPathFree = selectedFigure.isPathFree(initialPosition, finalPosition, this, board);
+        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFree._1().x, isPathFree._1().y);
+        // check if we found figure
+        if (!isPathFree._2()) {
+            // check if found figure is same team
+            if (figure.get().getTeam().equals(selectedFigure.getTeam())) {
+                isLegal = false;
+            } else {
+                if (finalPosition.x != isPathFree._1().x || finalPosition.y != isPathFree._1().y) {
+                    isLegal = false;
+                } else {
+                    // beating
+                    board.figuresList.remove(figure.get());
+                }
+            }
+        }
+
+        return isLegal;
+    }
+
+    boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
+        boolean isLegal = true;
+
+        float moveDistanceY = Math.abs(finalPosition.y - initialPosition.y);
+        float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
+        System.out.println("moveDistanceY: " + moveDistanceY);
+        System.out.println("moveDistanceX: " + moveDistanceX);
+        if (moveDistanceY == 1.0 && moveDistanceX == 2.0 ||
+            moveDistanceY == 1.0 && moveDistanceX == -2.0 ||
+            moveDistanceY == -1.0 && moveDistanceX == 2.0 ||
+            moveDistanceY == -1.0 && moveDistanceX == -2.0 ||
+            moveDistanceY == 2.0 && moveDistanceX == 1.0 ||
+            moveDistanceY == 2.0 && moveDistanceX == -1.0 ||
+            moveDistanceY == -2.0 && moveDistanceX == 1.0 ||
+            moveDistanceY == -2.0 && moveDistanceX == -1.0) {
+        } else isLegal = false;
+
+        return isLegal;
+    }
+
+    protected Tuple2<Vector2, Boolean> isPathFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Board board) {
+        String foundSignature = board.findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
+        if (!Objects.equals(foundSignature, "-1")) {
+            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
+            Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
+            if (foundFigure.isPresent()) {
+                return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
+            }
+        }
+        return new Tuple2<>(new Vector2(), true);
     }
 
     public String getFigureId() {
@@ -36,7 +94,7 @@ public class Knigth implements Figure {
 
     @Override
     public Vector2 setPosition(float x, float y) {
-        return position.set(x, y);
+        return (Vector2) position.set(x, y);
     }
 
     public Vector2 getPosition() {

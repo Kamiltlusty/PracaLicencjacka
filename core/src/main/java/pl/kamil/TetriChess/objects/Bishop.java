@@ -4,11 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.vavr.Tuple2;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Optional;
-
-import static java.lang.Math.*;
 
 public class Bishop extends Figure {
     private String figureId;

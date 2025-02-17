@@ -47,7 +47,6 @@ public class Queen extends Figure {
                 }
             }
         }
-
         return isLegal;
     }
 

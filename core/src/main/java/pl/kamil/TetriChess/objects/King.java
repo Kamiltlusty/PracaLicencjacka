@@ -11,6 +11,7 @@ public class King extends Figure {
     private Texture figureTexture;
     private Vector2 position = new Vector2();
     private Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
+    private boolean hasMoved;
     private static final int value = 1;
 
     public King(String kingId, Texture kingTexture, float positionX, float positionY, Team team) {
@@ -18,6 +19,7 @@ public class King extends Figure {
         this.figureTexture = kingTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.hasMoved = false;
     }
 
     @Override
@@ -47,7 +49,33 @@ public class King extends Figure {
                 }
             }
         }
-
+        // castling
+        if (!hasMoved && finalPosition.x == 6.0 && finalPosition.y == 0.0) {
+            Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(7, 0);
+            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+                rook.get().setPosition(5.0f, 0.0f);
+                ((Rook) rook.get()).setHasMoved(true);
+            }
+        } else if (!hasMoved && finalPosition.x == 2.0 && finalPosition.y == 0.0) {
+            Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(0, 0);
+            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+                rook.get().setPosition(3.0f, 0.0f);
+                ((Rook) rook.get()).setHasMoved(true);
+            }
+        } else if (!hasMoved && finalPosition.x == 6.0 && finalPosition.y == 7.0) {
+            Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(7, 7);
+            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+                rook.get().setPosition(5.0f, 7.0f);
+                ((Rook) rook.get()).setHasMoved(true);
+            }
+        } else if (!hasMoved && finalPosition.x == 2.0 && finalPosition.y == 7.0) {
+            Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(0, 7);
+            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+                rook.get().setPosition(3.0f, 7.0f);
+                ((Rook) rook.get()).setHasMoved(true);
+            }
+        }
+        hasMoved = isLegal ? true : false;
         return isLegal;
     }
 
@@ -58,8 +86,28 @@ public class King extends Figure {
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
         System.out.println("moveDistanceY: " + moveDistanceY);
         System.out.println("moveDistanceX: " + moveDistanceX);
-        if (moveDistanceX <= 1.0 && moveDistanceY <= 1.0) {
-        } else isLegal = false;
+        if (!hasMoved) {
+            if (!(moveDistanceX <= 1.0 && moveDistanceY <= 1.0 ||
+                moveDistanceX <= 2.0 && moveDistanceY <= 2.0 &&
+                    initialPosition.x == 4.0 && initialPosition.y == 0.0 &&
+                    finalPosition.x == 6.0 && finalPosition.y == 0.0 ||
+                moveDistanceX <= 2.0 && moveDistanceY <= 2.0 &&
+                    initialPosition.x == 4.0 && initialPosition.y == 0.0 &&
+                    finalPosition.x == 2.0 && finalPosition.y == 0.0 ||
+                moveDistanceX <= 2.0 && moveDistanceY <= 2.0 &&
+                    initialPosition.x == 4.0 && initialPosition.y == 7.0 &&
+                    finalPosition.x == 6.0 && finalPosition.y == 7.0 ||
+                moveDistanceX <= 2.0 && moveDistanceY <= 2.0 &&
+                    initialPosition.x == 4.0 && initialPosition.y == 7.0 &&
+                    finalPosition.x == 2.0 && finalPosition.y == 7.0)
+            ) {
+                isLegal = false;
+            }
+        } else {
+            if (!(moveDistanceX <= 1.0 && moveDistanceY <= 1.0)) {
+                isLegal = false;
+            }
+        }
 
         return isLegal;
     }

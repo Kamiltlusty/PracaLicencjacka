@@ -2,6 +2,7 @@ package pl.kamil.TetriChess;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.screens.GameScreen;
 
@@ -13,6 +14,8 @@ public class Main extends Game {
     // screens
     public GameScreen gameScreen;
 
+    // game
+    public GameFlow gameFlow;
 
 
     @Override
@@ -24,8 +27,10 @@ public class Main extends Game {
         assets.load();
         assets.manager.finishLoading();
 
+        // initialize game
+        gameFlow = new GameFlow(assets);
         // initialize game screen
-        gameScreen = new GameScreen(this);
+        gameScreen = new GameScreen(gameFlow, batch, assets);
         setScreen(gameScreen);
     }
 

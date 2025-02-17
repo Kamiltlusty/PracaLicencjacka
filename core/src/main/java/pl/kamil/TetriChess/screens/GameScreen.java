@@ -5,13 +5,16 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import pl.kamil.TetriChess.Main;
+import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.objects.Board;
 import pl.kamil.TetriChess.objects.Field;
 import pl.kamil.TetriChess.objects.Figure;
+import pl.kamil.TetriChess.objects.Pawn;
 import pl.kamil.TetriChess.resources.Assets;
 
 import java.util.Objects;
@@ -20,8 +23,10 @@ import java.util.Optional;
 import static pl.kamil.TetriChess.resources.GlobalVariables.*;
 
 public class GameScreen implements Screen, InputProcessor {
-    private final Main game;
+    private final GameFlow gameFlow;
     private final ExtendViewport viewport;
+    private final SpriteBatch batch;
+    private final Assets assets;
 
     // field
     private Texture major_field_texture;
@@ -37,8 +42,10 @@ public class GameScreen implements Screen, InputProcessor {
     private Board board;
     private static final int CUBE_FIELD_NUM = 3;
 
-    public GameScreen(Main game) {
-        this.game = game;
+    public GameScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets) {
+        this.gameFlow = gameFlow;
+        this.batch = batch;
+        this.assets = assets;
 
         // set up the viewport
         viewport = new ExtendViewport(
@@ -49,7 +56,7 @@ public class GameScreen implements Screen, InputProcessor {
         );
 
         // create board
-        board = new Board(game.assets);
+        board = gameFlow.getBoard();
 
         // create cubes
         initializeCubeFields();
@@ -58,15 +65,15 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     public void initializeCubeFields() {
-        major_field_texture = game.assets.manager.get(Assets.MAJOR_FIELD_TEXTURE);
-        minor_field_texture = game.assets.manager.get(Assets.MINOR_FIELD_TEXTURE);
+        major_field_texture = assets.manager.get(Assets.MAJOR_FIELD_TEXTURE);
+        minor_field_texture = assets.manager.get(Assets.MINOR_FIELD_TEXTURE);
     }
 
     public void initializeNumbers() {
-        one_texture = game.assets.manager.get(Assets.ONE_TEXTURE);
-        two_texture = game.assets.manager.get(Assets.TWO_TEXTURE);
-        three_texture = game.assets.manager.get(Assets.THREE_TEXTURE);
-        four_texture = game.assets.manager.get(Assets.FOUR_TEXTURE);
+        one_texture = assets.manager.get(Assets.ONE_TEXTURE);
+        two_texture = assets.manager.get(Assets.TWO_TEXTURE);
+        three_texture = assets.manager.get(Assets.THREE_TEXTURE);
+        four_texture = assets.manager.get(Assets.FOUR_TEXTURE);
     }
 
     @Override
@@ -80,10 +87,10 @@ public class GameScreen implements Screen, InputProcessor {
         ScreenUtils.clear(Color.BLACK);
 
 //        // set the sprite batch to use the camera
-//        game.batch.setProjectionMatrix(viewport.getCamera().combined);
+//        batch.setProjectionMatrix(viewport.getCamera().combined);
 
         // begin drawing
-        game.batch.begin();
+        batch.begin();
 
         drawChessBoard();
         // draw 3x3 cube side
@@ -95,7 +102,7 @@ public class GameScreen implements Screen, InputProcessor {
         drawFigures();
 
         // end drawing
-        game.batch.end();
+        batch.end();
     }
 
     private void drawFigures() {
@@ -122,7 +129,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawMajorCube() {
-        game.batch.draw(
+        batch.draw(
             major_field_texture,
             1000,
             550,
@@ -132,7 +139,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawMinor1Cube() {
-        game.batch.draw(
+        batch.draw(
             minor_field_texture,
             940,
             300,
@@ -142,7 +149,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawMinor2Cube() {
-        game.batch.draw(
+        batch.draw(
             minor_field_texture,
             1200,
             300,
@@ -152,7 +159,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawMinor3Cube() {
-        game.batch.draw(
+        batch.draw(
             minor_field_texture,
             1075,
             50,
@@ -162,7 +169,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawNumber1() {
-        game.batch.draw(
+        batch.draw(
             one_texture,
             960,
             840,
@@ -172,7 +179,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawNumber2() {
-        game.batch.draw(
+        batch.draw(
             two_texture,
             900,
             476,
@@ -182,7 +189,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawNumber3() {
-        game.batch.draw(
+        batch.draw(
             three_texture,
             1146,
             460,
@@ -192,7 +199,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawNumber4() {
-        game.batch.draw(
+        batch.draw(
             four_texture,
             1020,
             210,
@@ -226,7 +233,7 @@ public class GameScreen implements Screen, InputProcessor {
 
 
     private void drawField(Field field) {
-        game.batch.draw(
+        batch.draw(
             field.getFieldTexture(),
             field.getPosition().x * field.getFieldTexture().getWidth(),
             field.getPosition().y * field.getFieldTexture().getHeight(),
@@ -236,7 +243,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawFigure(Field field, Figure figure) {
-        game.batch.draw(
+        batch.draw(
             figure.getFigureTexture(),
             figure.getPosition().x * field.getFieldTexture().getWidth(),
             figure.getPosition().y * field.getFieldTexture().getHeight(),
@@ -349,6 +356,7 @@ public class GameScreen implements Screen, InputProcessor {
             Optional<Figure> selectedFigure = board.getSelectedFigure();
 //            Field field = board.getFieldsMap().get("A1");
             if (selectedFigure.isPresent() &&
+                gameFlow.getActive().equals(selectedFigure.get().getTeam()) &&
                 selectedFigure.get().isMoveLegal(
                     board.getInitialFieldPosition(),
                     board.getFinalFieldPosition(),
@@ -356,10 +364,16 @@ public class GameScreen implements Screen, InputProcessor {
                     board
                     )
             ) {
-                selectedFigure.get().setPosition(
-                    fieldCoordinates.x,
-                    fieldCoordinates.y
-                );
+                // if figure stays at the same position do not count it as a move
+                if (board.getInitialFieldPosition().x == board.getFinalFieldPosition().x
+                && board.getInitialFieldPosition().y == board.getFinalFieldPosition().y) {
+                    allValid = false;
+                } else {
+                    selectedFigure.get().setPosition(
+                        fieldCoordinates.x,
+                        fieldCoordinates.y
+                    );
+                }
             } else allValid = false;
         } else allValid = false;
 
@@ -372,6 +386,9 @@ public class GameScreen implements Screen, InputProcessor {
                 fieldCoordinates.x,
                 fieldCoordinates.y
             ));
+        } else {
+            // switch move to another player
+            gameFlow.setActive();
         }
 
         board.setSelectedFigureAsEmpty();

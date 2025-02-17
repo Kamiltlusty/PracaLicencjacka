@@ -11,6 +11,7 @@ public class Rook extends Figure {
     private Texture figureTexture;
     private Vector2 position = new Vector2();
     private Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
+    private boolean hasMoved;
     private static final int value = 1;
 
     public Rook(String rookId, Texture rookTexture, float positionX, float positionY, Team team) {
@@ -18,6 +19,7 @@ public class Rook extends Figure {
         this.figureTexture = rookTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.hasMoved = false;
     }
 
     @Override
@@ -47,7 +49,7 @@ public class Rook extends Figure {
                 }
             }
         }
-
+        hasMoved = isLegal ? true : false;
         return isLegal;
     }
 
@@ -76,6 +78,13 @@ public class Rook extends Figure {
         }
 
         return isLegal;
+    }
+
+    public void setHasMoved(boolean hasMoved) {
+        this.hasMoved = hasMoved;
+    }
+    public boolean getHasMoved() {
+        return hasMoved;
     }
 
     @Override

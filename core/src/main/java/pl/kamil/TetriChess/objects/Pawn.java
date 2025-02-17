@@ -60,6 +60,7 @@ public class Pawn extends Figure {
         if (!hasBeat && initialPosition.x != isPathFree._1().x) {
             isLegal = false;
         }
+        
         // switching hasMoved back to false as it can't move anyway
         if (!isLegal) hasMoved = false;
         // switching back hasBeat so it can beat again and transition properly

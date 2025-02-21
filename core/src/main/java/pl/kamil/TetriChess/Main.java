@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.screens.GameScreen;
+import pl.kamil.TetriChess.side_panel.ShapesManager;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
@@ -16,6 +17,9 @@ public class Main extends Game {
 
     // game
     public GameFlow gameFlow;
+
+    // shapes manager
+    public ShapesManager shapesManager;
 
 
     @Override

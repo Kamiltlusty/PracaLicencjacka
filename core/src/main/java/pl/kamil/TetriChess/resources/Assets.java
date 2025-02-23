@@ -32,7 +32,6 @@ public class Assets {
     public static final String TETRIS_FIELD_YELLOW = "textures/fields/tetris_field_yellow.png";
     public static final String TETRIS_FIELD_RED = "textures/fields/tetris_field_red.png";
 
-
     // numbers
     public static final String ONE_WHITE_TEXTURE = "textures/numbers/one_white.png";
     public static final String TWO_WHITE_TEXTURE = "textures/numbers/two_white.png";
@@ -54,6 +53,42 @@ public class Assets {
     public static final String TWO_TEXTURE = "textures/two.png";
     public static final String THREE_TEXTURE = "textures/three.png";
     public static final String FOUR_TEXTURE = "textures/four.png";
+
+    // panel numbers
+    public static final String P_TWO_BLACK_TEXTURE = "textures/panel_numbers/p_two_black.png";
+    public static final String P_THREE_BLACK_TEXTURE = "textures/panel_numbers/p_three_black.png";
+    public static final String P_FOUR_BLACK_TEXTURE = "textures/panel_numbers/p_four_black.png";
+    public static final String P_FIVE_BLACK_TEXTURE = "textures/panel_numbers/p_five_black.png";
+    public static final String P_SIX_BLACK_TEXTURE = "textures/panel_numbers/p_six_black.png";
+    public static final String P_SEVEN_BLACK_TEXTURE = "textures/panel_numbers/p_seven_black.png";
+    public static final String P_EIGHT_BLACK_TEXTURE = "textures/panel_numbers/p_eight_black.png";
+
+    // panel letters
+    public static final String P_B_BLACK_TEXTURE = "textures/panel_letters/p_b_black.png";
+    public static final String P_C_BLACK_TEXTURE = "textures/panel_letters/p_c_black.png";
+    public static final String P_D_BLACK_TEXTURE = "textures/panel_letters/p_d_black.png";
+    public static final String P_E_BLACK_TEXTURE = "textures/panel_letters/p_e_black.png";
+    public static final String P_F_BLACK_TEXTURE = "textures/panel_letters/p_f_black.png";
+    public static final String P_G_BLACK_TEXTURE = "textures/panel_letters/p_g_black.png";
+    public static final String P_H_BLACK_TEXTURE = "textures/panel_letters/p_h_black.png";
+
+    // letters
+    public static final String A_WHITE_TEXTURE = "textures/letters/a_white.png";
+    public static final String B_WHITE_TEXTURE = "textures/letters/b_white.png";
+    public static final String C_WHITE_TEXTURE = "textures/letters/c_white.png";
+    public static final String D_WHITE_TEXTURE = "textures/letters/d_white.png";
+    public static final String E_WHITE_TEXTURE = "textures/letters/e_white.png";
+    public static final String F_WHITE_TEXTURE = "textures/letters/f_white.png";
+    public static final String G_WHITE_TEXTURE = "textures/letters/g_white.png";
+    public static final String H_WHITE_TEXTURE = "textures/letters/h_white.png";
+    public static final String A_BlACK_TEXTURE = "textures/letters/a_black.png";
+    public static final String B_BlACK_TEXTURE = "textures/letters/b_black.png";
+    public static final String C_BlACK_TEXTURE = "textures/letters/c_black.png";
+    public static final String D_BlACK_TEXTURE = "textures/letters/d_black.png";
+    public static final String E_BlACK_TEXTURE = "textures/letters/e_black.png";
+    public static final String F_BlACK_TEXTURE = "textures/letters/f_black.png";
+    public static final String G_BlACK_TEXTURE = "textures/letters/g_black.png";
+    public static final String H_BlACK_TEXTURE = "textures/letters/h_black.png";
 
     public void load() {
         // load all assets
@@ -102,6 +137,36 @@ public class Assets {
         manager.load(SIX_BlACK_TEXTURE, Texture.class);
         manager.load(SEVEN_BlACK_TEXTURE, Texture.class);
         manager.load(EIGHT_BlACK_TEXTURE, Texture.class);
+        manager.load(A_WHITE_TEXTURE, Texture.class);
+        manager.load(B_WHITE_TEXTURE, Texture.class);
+        manager.load(C_WHITE_TEXTURE, Texture.class);
+        manager.load(D_WHITE_TEXTURE, Texture.class);
+        manager.load(E_WHITE_TEXTURE, Texture.class);
+        manager.load(F_WHITE_TEXTURE, Texture.class);
+        manager.load(G_WHITE_TEXTURE, Texture.class);
+        manager.load(H_WHITE_TEXTURE, Texture.class);
+        manager.load(A_BlACK_TEXTURE, Texture.class);
+        manager.load(B_BlACK_TEXTURE, Texture.class);
+        manager.load(C_BlACK_TEXTURE, Texture.class);
+        manager.load(D_BlACK_TEXTURE, Texture.class);
+        manager.load(E_BlACK_TEXTURE, Texture.class);
+        manager.load(F_BlACK_TEXTURE, Texture.class);
+        manager.load(G_BlACK_TEXTURE, Texture.class);
+        manager.load(H_BlACK_TEXTURE, Texture.class);
+        manager.load(P_TWO_BLACK_TEXTURE, Texture.class);
+        manager.load(P_THREE_BLACK_TEXTURE, Texture.class);
+        manager.load(P_FOUR_BLACK_TEXTURE, Texture.class);
+        manager.load(P_FIVE_BLACK_TEXTURE, Texture.class);
+        manager.load(P_SIX_BLACK_TEXTURE, Texture.class);
+        manager.load(P_SEVEN_BLACK_TEXTURE, Texture.class);
+        manager.load(P_EIGHT_BLACK_TEXTURE, Texture.class);
+        manager.load(P_B_BLACK_TEXTURE, Texture.class);
+        manager.load(P_C_BLACK_TEXTURE, Texture.class);
+        manager.load(P_D_BLACK_TEXTURE, Texture.class);
+        manager.load(P_E_BLACK_TEXTURE, Texture.class);
+        manager.load(P_F_BLACK_TEXTURE, Texture.class);
+        manager.load(P_G_BLACK_TEXTURE, Texture.class);
+        manager.load(P_H_BLACK_TEXTURE, Texture.class);
     }
 
     public void dispose() {

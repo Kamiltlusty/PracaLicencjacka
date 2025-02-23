@@ -61,6 +61,4 @@ public class ShapesManager {
         resultShape.setShape();
         return resultShape.rotate(rotation);
     }
-
-
 }

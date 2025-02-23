@@ -65,4 +65,12 @@ public abstract class Shape {
     }
 
     protected abstract void setShape();
+
+    public Character getLetter() {
+        return letter;
+    }
+
+    public Integer getNumber() {
+        return number;
+    }
 }

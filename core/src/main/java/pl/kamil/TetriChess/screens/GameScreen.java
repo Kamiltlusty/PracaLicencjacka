@@ -14,6 +14,7 @@ import pl.kamil.TetriChess.objects.Board;
 import pl.kamil.TetriChess.objects.Field;
 import pl.kamil.TetriChess.objects.Figure;
 import pl.kamil.TetriChess.resources.Assets;
+import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.Square1x1;
 
 import java.util.List;
@@ -32,27 +33,29 @@ public class GameScreen implements Screen, InputProcessor {
     private Texture major_field_texture;
     private Texture minor_field_texture;
 
-    // numbers
+    // panel numbers
     private Texture one_texture;
     private Texture two_texture;
     private Texture three_texture;
     private Texture four_texture;
-    private Texture one_white_texture;
-    private Texture two_white_texture;
-    private Texture three_white_texture;
-    private Texture four_white_texture;
-    private Texture five_white_texture;
-    private Texture six_white_texture;
-    private Texture seven_white_texture;
-    private Texture eight_white_texture;
-    private Texture one_black_texture;
-    private Texture two_black_texture;
-    private Texture three_black_texture;
-    private Texture four_black_texture;
-    private Texture five_black_texture;
-    private Texture six_black_texture;
-    private Texture seven_black_texture;
-    private Texture eight_black_texture;
+
+    // panel on cubes numbers
+    public Texture p_two_black_texture;
+    public Texture p_three_black_texture;
+    public Texture p_four_black_texture;
+    public Texture p_five_black_texture;
+    public Texture p_six_black_texture;
+    public Texture p_seven_black_texture;
+    public Texture p_eight_black_texture;
+
+    // panel on cubes letters
+    public Texture p_b_black_texture;
+    public Texture p_c_black_texture;
+    public Texture p_d_black_texture;
+    public Texture p_e_black_texture;
+    public Texture p_f_black_texture;
+    public Texture p_h_black_texture;
+    public Texture p_g_black_texture;
 
 
     // boards
@@ -76,37 +79,46 @@ public class GameScreen implements Screen, InputProcessor {
         board = gameFlow.getBoard();
 
         // create cubes
-        initializeCubeFields();
+        initCubeFields();
         // create numbers
-        initializeNumbers();
+        initPanelNumbers();
+        // panel on cubes numbers
+        initPOnCubesNums();
+        // panel on cubes letters
+        initPOnCubesLetters();
     }
 
-    public void initializeCubeFields() {
+    private void initPOnCubesNums() {
+        p_two_black_texture = assets.manager.get(Assets.P_TWO_BLACK_TEXTURE);
+        p_three_black_texture = assets.manager.get(Assets.P_THREE_BLACK_TEXTURE);
+        p_four_black_texture = assets.manager.get(Assets.P_FOUR_BLACK_TEXTURE);
+        p_five_black_texture = assets.manager.get(Assets.P_FIVE_BLACK_TEXTURE);
+        p_six_black_texture = assets.manager.get(Assets.P_SIX_BLACK_TEXTURE);
+        p_seven_black_texture = assets.manager.get(Assets.P_SEVEN_BLACK_TEXTURE);
+        p_eight_black_texture = assets.manager.get(Assets.P_SEVEN_BLACK_TEXTURE);
+
+    }
+    private void initPOnCubesLetters() {
+        p_b_black_texture = assets.manager.get(Assets.P_B_BLACK_TEXTURE);
+        p_c_black_texture = assets.manager.get(Assets.P_C_BLACK_TEXTURE);
+        p_d_black_texture = assets.manager.get(Assets.P_D_BLACK_TEXTURE);
+        p_e_black_texture = assets.manager.get(Assets.P_E_BLACK_TEXTURE);
+        p_f_black_texture = assets.manager.get(Assets.P_F_BLACK_TEXTURE);
+        p_g_black_texture = assets.manager.get(Assets.P_G_BLACK_TEXTURE);
+        p_h_black_texture = assets.manager.get(Assets.P_H_BLACK_TEXTURE);
+
+    }
+
+    public void initCubeFields() {
         major_field_texture = assets.manager.get(Assets.MAJOR_FIELD_TEXTURE);
         minor_field_texture = assets.manager.get(Assets.MINOR_FIELD_TEXTURE);
     }
 
-    public void initializeNumbers() {
+    public void initPanelNumbers() {
         one_texture = assets.manager.get(Assets.ONE_TEXTURE);
         two_texture = assets.manager.get(Assets.TWO_TEXTURE);
         three_texture = assets.manager.get(Assets.THREE_TEXTURE);
         four_texture = assets.manager.get(Assets.FOUR_TEXTURE);
-        one_white_texture = assets.manager.get(Assets.ONE_WHITE_TEXTURE);
-        two_white_texture = assets.manager.get(Assets.TWO_WHITE_TEXTURE);
-        three_white_texture = assets.manager.get(Assets.THREE_WHITE_TEXTURE);
-        four_white_texture = assets.manager.get(Assets.FOUR_WHITE_TEXTURE);
-        five_white_texture = assets.manager.get(Assets.FIVE_WHITE_TEXTURE);
-        six_white_texture = assets.manager.get(Assets.SIX_WHITE_TEXTURE);
-        seven_white_texture = assets.manager.get(Assets.SEVEN_WHITE_TEXTURE);
-        eight_white_texture = assets.manager.get(Assets.EIGHT_WHITE_TEXTURE);
-        one_black_texture = assets.manager.get(Assets.ONE_BlACK_TEXTURE);
-        two_black_texture = assets.manager.get(Assets.TWO_BlACK_TEXTURE);
-        three_black_texture = assets.manager.get(Assets.THREE_BlACK_TEXTURE);
-        four_black_texture = assets.manager.get(Assets.FOUR_BlACK_TEXTURE);
-        five_black_texture = assets.manager.get(Assets.FIVE_BlACK_TEXTURE);
-        six_black_texture = assets.manager.get(Assets.SIX_BlACK_TEXTURE);
-        seven_black_texture = assets.manager.get(Assets.SEVEN_BlACK_TEXTURE);
-        eight_black_texture = assets.manager.get(Assets.EIGHT_BlACK_TEXTURE);
     }
 
     @Override
@@ -161,6 +173,7 @@ public class GameScreen implements Screen, InputProcessor {
         drawMinor3Cube();
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     private void drawMajorCube() {
         batch.draw(
             major_field_texture,
@@ -179,6 +192,53 @@ public class GameScreen implements Screen, InputProcessor {
                 el.getRectangle().getHeight()
             );
         }
+        Shape first = gameFlow.getShapesManager().getShapes().getFirst();
+        for (int i = 0; i < CUBE_FIELD_NUM; i++) {
+            Texture t1 = getPanelNumTexture(first.getNumber() + i);
+            batch.draw(
+                t1,
+                1000,
+                550 + i * P_SQUARE_1X1_SIDE,
+                P_SQUARE_1X1_SIDE,
+                P_SQUARE_1X1_SIDE
+            );
+        }
+        for (int j = 0; j < CUBE_FIELD_NUM; j++) {
+            Texture t1 = getPanelLetterTexture(first.getNumber() + j);
+            batch.draw(
+                t1,
+                1000 + j * P_SQUARE_1X1_SIDE,
+                550,
+                P_SQUARE_1X1_SIDE,
+                P_SQUARE_1X1_SIDE
+            );
+        }
+    }
+
+    private Texture getPanelLetterTexture(int number) {
+        return switch (number) {
+            case 2 -> p_b_black_texture;
+            case 3 -> p_c_black_texture;
+            case 4 -> p_d_black_texture;
+            case 5 -> p_e_black_texture;
+            case 6 -> p_f_black_texture;
+            case 7 -> p_g_black_texture;
+            case 8 -> p_h_black_texture;
+            default -> null;
+        };
+    }
+
+    private Texture getPanelNumTexture(int number) {
+        return switch (number) {
+            case 2 -> p_two_black_texture;
+            case 3 -> p_three_black_texture;
+            case 4 -> p_four_black_texture;
+            case 5 -> p_five_black_texture;
+            case 6 -> p_six_black_texture;
+            case 7 -> p_seven_black_texture;
+            case 8 -> p_eight_black_texture;
+            default -> null;
+        };
     }
 
     private void drawMinor1Cube() {
@@ -193,10 +253,10 @@ public class GameScreen implements Screen, InputProcessor {
         for (var el : list) {
             batch.draw(
                 el.getTexture(),
-                940 + el.getRectangle().x * 2/3,
-                300 + el.getRectangle().y * 2/3,
-                el.getRectangle().getWidth() * 2/3,
-                el.getRectangle().getHeight() * 2/3
+                940 + el.getRectangle().x * 2 / 3,
+                300 + el.getRectangle().y * 2 / 3,
+                el.getRectangle().getWidth() * 2 / 3,
+                el.getRectangle().getHeight() * 2 / 3
             );
         }
     }
@@ -213,10 +273,10 @@ public class GameScreen implements Screen, InputProcessor {
         for (var el : list) {
             batch.draw(
                 el.getTexture(),
-                1200 + el.getRectangle().x * 2/3,
-                300 + el.getRectangle().y * 2/3,
-                el.getRectangle().getWidth() * 2/3,
-                el.getRectangle().getHeight() * 2/3
+                1200 + el.getRectangle().x * 2 / 3,
+                300 + el.getRectangle().y * 2 / 3,
+                el.getRectangle().getWidth() * 2 / 3,
+                el.getRectangle().getHeight() * 2 / 3
             );
         }
     }
@@ -233,10 +293,10 @@ public class GameScreen implements Screen, InputProcessor {
         for (var el : list) {
             batch.draw(
                 el.getTexture(),
-                1075 + el.getRectangle().x * 2/3,
-                50 + el.getRectangle().y * 2/3,
-                el.getRectangle().getWidth() * 2/3,
-                el.getRectangle().getHeight() * 2/3
+                1075 + el.getRectangle().x * 2 / 3,
+                50 + el.getRectangle().y * 2 / 3,
+                el.getRectangle().getWidth() * 2 / 3,
+                el.getRectangle().getHeight() * 2 / 3
             );
         }
     }
@@ -245,7 +305,7 @@ public class GameScreen implements Screen, InputProcessor {
         batch.draw(
             one_texture,
             920,
-            800 ,
+            800,
             one_texture.getWidth(),
             one_texture.getHeight()
         );
@@ -313,20 +373,24 @@ public class GameScreen implements Screen, InputProcessor {
             field.getFieldTexture().getWidth(),
             field.getFieldTexture().getHeight()
         );
-        batch.draw(
-            field.getFieldTexture(),
-            field.getPosition().x * field.getFieldTexture().getWidth(),
-            field.getPosition().y * field.getFieldTexture().getHeight(),
-            field.getFieldTexture().getWidth(),
-            field.getFieldTexture().getHeight()
-        );
-        batch.draw(
-            field.getFieldTexture(),
-            field.getPosition().x * field.getFieldTexture().getWidth(),
-            field.getPosition().y * field.getFieldTexture().getHeight(),
-            field.getFieldTexture().getWidth(),
-            field.getFieldTexture().getHeight()
-        );
+        if (field.isVisibleLetter()) {
+            batch.draw(
+                field.getLetterTexture(),
+                field.getPosition().x * field.getFieldTexture().getWidth(),
+                field.getPosition().y * field.getFieldTexture().getHeight(),
+                field.getFieldTexture().getWidth(),
+                field.getFieldTexture().getHeight()
+            );
+        }
+        if (field.isVisibleNumber()) {
+            batch.draw(
+                field.getNumberTexture(),
+                field.getPosition().x * field.getNumberTexture().getWidth(),
+                field.getPosition().y * field.getNumberTexture().getHeight(),
+                field.getNumberTexture().getWidth(),
+                field.getNumberTexture().getHeight()
+            );
+        }
     }
 
     private void drawFigure(Field field, Figure figure) {
@@ -449,11 +513,11 @@ public class GameScreen implements Screen, InputProcessor {
                     board.getFinalFieldPosition(),
                     selectedFigure.get(),
                     board
-                    )
+                )
             ) {
                 // if figure stays at the same position do not count it as a move
                 if (board.getInitialFieldPosition().x == board.getFinalFieldPosition().x
-                && board.getInitialFieldPosition().y == board.getFinalFieldPosition().y) {
+                    && board.getInitialFieldPosition().y == board.getFinalFieldPosition().y) {
                     allValid = false;
                 } else {
                     selectedFigure.get().setPosition(

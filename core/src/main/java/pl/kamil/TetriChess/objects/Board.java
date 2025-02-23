@@ -37,6 +37,43 @@ public class Board {
     private Texture king_texture_black;
     private Texture queen_texture_black;
 
+    // numbers textures
+    private Texture one_white_texture;
+    private Texture two_white_texture;
+    private Texture three_white_texture;
+    private Texture four_white_texture;
+    private Texture five_white_texture;
+    private Texture six_white_texture;
+    private Texture seven_white_texture;
+    private Texture eight_white_texture;
+    private Texture one_black_texture;
+    private Texture two_black_texture;
+    private Texture three_black_texture;
+    private Texture four_black_texture;
+    private Texture five_black_texture;
+    private Texture six_black_texture;
+    private Texture seven_black_texture;
+    private Texture eight_black_texture;
+
+    // letters textures
+    private Texture a_white_texture;
+    private Texture b_white_texture;
+    private Texture c_white_texture;
+    private Texture d_white_texture;
+    private Texture e_white_texture;
+    private Texture f_white_texture;
+    private Texture g_white_texture;
+    private Texture h_white_texture;
+    private Texture a_black_texture;
+    private Texture b_black_texture;
+    private Texture c_black_texture;
+    private Texture d_black_texture;
+    private Texture e_black_texture;
+    private Texture f_black_texture;
+    private Texture g_black_texture;
+    private Texture h_black_texture;
+
+
 
     public Vector2 getInitialPointerPosition() {
         return initialPointerPosition;
@@ -80,6 +117,10 @@ public class Board {
         // crate textures
         initializeBoardFields();
         initializeFigures();
+        // create numbers texture
+        initializeNumbers();
+        // create letters textures
+        initializeLetters();
 
         // draw the chessboard
         setFieldsMap();
@@ -101,6 +142,43 @@ public class Board {
         queen_texture_black = assets.manager.get(Assets.QUEEN_TEXTURE_BLACK);
     }
 
+    public void initializeNumbers() {
+        one_white_texture = assets.manager.get(Assets.ONE_WHITE_TEXTURE);
+        two_white_texture = assets.manager.get(Assets.TWO_WHITE_TEXTURE);
+        three_white_texture = assets.manager.get(Assets.THREE_WHITE_TEXTURE);
+        four_white_texture = assets.manager.get(Assets.FOUR_WHITE_TEXTURE);
+        five_white_texture = assets.manager.get(Assets.FIVE_WHITE_TEXTURE);
+        six_white_texture = assets.manager.get(Assets.SIX_WHITE_TEXTURE);
+        seven_white_texture = assets.manager.get(Assets.SEVEN_WHITE_TEXTURE);
+        eight_white_texture = assets.manager.get(Assets.EIGHT_WHITE_TEXTURE);
+        one_black_texture = assets.manager.get(Assets.ONE_BlACK_TEXTURE);
+        two_black_texture = assets.manager.get(Assets.TWO_BlACK_TEXTURE);
+        three_black_texture = assets.manager.get(Assets.THREE_BlACK_TEXTURE);
+        four_black_texture = assets.manager.get(Assets.FOUR_BlACK_TEXTURE);
+        five_black_texture = assets.manager.get(Assets.FIVE_BlACK_TEXTURE);
+        six_black_texture = assets.manager.get(Assets.SIX_BlACK_TEXTURE);
+        seven_black_texture = assets.manager.get(Assets.SEVEN_BlACK_TEXTURE);
+        eight_black_texture = assets.manager.get(Assets.EIGHT_BlACK_TEXTURE);
+    }
+    public void initializeLetters() {
+        a_white_texture = assets.manager.get(Assets.A_WHITE_TEXTURE);
+        b_white_texture = assets.manager.get(Assets.B_WHITE_TEXTURE);
+        c_white_texture = assets.manager.get(Assets.C_WHITE_TEXTURE);
+        d_white_texture = assets.manager.get(Assets.D_WHITE_TEXTURE);
+        e_white_texture = assets.manager.get(Assets.E_WHITE_TEXTURE);
+        f_white_texture = assets.manager.get(Assets.F_WHITE_TEXTURE);
+        g_white_texture = assets.manager.get(Assets.G_WHITE_TEXTURE);
+        h_white_texture = assets.manager.get(Assets.H_WHITE_TEXTURE);
+        a_black_texture = assets.manager.get(Assets.A_BlACK_TEXTURE);
+        b_black_texture = assets.manager.get(Assets.B_BlACK_TEXTURE);
+        c_black_texture = assets.manager.get(Assets.C_BlACK_TEXTURE);
+        d_black_texture = assets.manager.get(Assets.D_BlACK_TEXTURE);
+        e_black_texture = assets.manager.get(Assets.E_BlACK_TEXTURE);
+        f_black_texture = assets.manager.get(Assets.F_BlACK_TEXTURE);
+        g_black_texture = assets.manager.get(Assets.G_BlACK_TEXTURE);
+        h_black_texture = assets.manager.get(Assets.H_BlACK_TEXTURE);
+    }
+
 
     public void initializeBoardFields() {
         black_field_texture = assets.manager.get(Assets.FIELD_TEXTURE_BLACK);
@@ -112,13 +190,145 @@ public class Board {
             for (int j = 0; j < BOARD_FIELD_NUM; j++) {
                 String fieldSignature = findFieldSignature(i, j);
                 if (i % 2 == 0 && j % 2 == 0 || i % 2 == 1 && j % 2 == 1) {
-                    fieldsMap.put(fieldSignature, new Field(white_field_texture, j, i, white_field_texture.getWidth(), white_field_texture.getHeight()));
+                    if (j == 0 && i == 0) {
+                        fieldsMap.put(fieldSignature,
+                            new Field(white_field_texture,
+                                getBlackNumTexture(i), // to be visible it has to be opposite to field color
+                                getBlackLetterTexture(j),
+                                true,
+                                true,
+                                j,
+                                i,
+                                white_field_texture.getWidth(),
+                                white_field_texture.getHeight()));
+                    } else if (i != 0 && j == 0) {
+                        fieldsMap.put(fieldSignature,
+                            new Field(white_field_texture,
+                                getBlackNumTexture(i), // to be visible it has to be opposite to field color
+                                getBlackLetterTexture(j),
+                                true,
+                                false,
+                                j,
+                                i,
+                                white_field_texture.getWidth(),
+                                white_field_texture.getHeight()));
+                    }else if (i == 0) {
+                        fieldsMap.put(fieldSignature,
+                            new Field(white_field_texture,
+                                getBlackNumTexture(i), // to be visible it has to be opposite to field color
+                                getBlackLetterTexture(j),
+                                false,
+                                true,
+                                j,
+                                i,
+                                white_field_texture.getWidth(),
+                                white_field_texture.getHeight()));
+                    }
+                    else {
+                        fieldsMap.put(fieldSignature,
+                            new Field(white_field_texture,
+                                getBlackNumTexture(i), // to be visible it has to be opposite to field color
+                                getBlackLetterTexture(j),
+                                false,
+                                false,
+                                j,
+                                i,
+                                white_field_texture.getWidth(),
+                                white_field_texture.getHeight()));
+                    }
                 } else {
-                    fieldsMap.put(fieldSignature, new Field(black_field_texture, j, i, black_field_texture.getWidth(), black_field_texture.getHeight()));
+                    if (i != 0 && j == 0) {
+                        fieldsMap.put(fieldSignature,
+                            new Field(black_field_texture,
+                                getWhiteNumTexture(i),
+                                getWhiteLetterTexture(j),
+                                true,
+                                false,
+                                j,
+                                i,
+                                black_field_texture.getWidth(),
+                                black_field_texture.getHeight()));
+                    }
+                    else if (i == 0) {
+                        fieldsMap.put(fieldSignature,
+                            new Field(black_field_texture,
+                                getWhiteNumTexture(i), // to be visible it has to be opposite to field color
+                                getWhiteLetterTexture(j),
+                                false,
+                                true,
+                                j,
+                                i,
+                                black_field_texture.getWidth(),
+                                black_field_texture.getHeight()));
+                    }
+                    else {
+                        fieldsMap.put(fieldSignature,
+                            new Field(black_field_texture,
+                                getWhiteNumTexture(i),
+                                getWhiteLetterTexture(j),
+                                false,
+                                false,
+                                j,
+                                i,
+                                black_field_texture.getWidth(),
+                                black_field_texture.getHeight()));
+                    }
                 }
 
             }
         }
+    }
+    public Texture getWhiteNumTexture(int i) {
+        return switch (i) {
+            case 0 -> one_white_texture;
+            case 1 -> two_white_texture;
+            case 2 -> three_white_texture;
+            case 3 -> four_white_texture;
+            case 4 -> five_white_texture;
+            case 5 -> six_white_texture;
+            case 6 -> seven_white_texture;
+            case 7 -> eight_white_texture;
+            default -> null;
+        };
+    }
+    public Texture getBlackNumTexture(int i) {
+        return switch (i) {
+            case 0 -> one_black_texture;
+            case 1 -> two_black_texture;
+            case 2 -> three_black_texture;
+            case 3 -> four_black_texture;
+            case 4 -> five_black_texture;
+            case 5 -> six_black_texture;
+            case 6 -> seven_black_texture;
+            case 7 -> eight_black_texture;
+            default -> null;
+        };
+    }
+    public Texture getWhiteLetterTexture(int j) {
+        return switch (j) {
+            case 0 -> a_white_texture;
+            case 1 -> b_white_texture;
+            case 2 -> c_white_texture;
+            case 3 -> d_white_texture;
+            case 4 -> e_white_texture;
+            case 5 -> f_white_texture;
+            case 6 -> g_white_texture;
+            case 7 -> h_white_texture;
+            default -> null;
+        };
+    }
+    public Texture getBlackLetterTexture(int j) {
+        return switch (j) {
+            case 0 -> a_black_texture;
+            case 1 -> b_black_texture;
+            case 2 -> c_black_texture;
+            case 3 -> d_black_texture;
+            case 4 -> e_black_texture;
+            case 5 -> f_black_texture;
+            case 6 -> g_black_texture;
+            case 7 -> h_black_texture;
+            default -> null;
+        };
     }
 
     public void setFiguresInitially() {

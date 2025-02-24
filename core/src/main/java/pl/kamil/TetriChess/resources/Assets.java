@@ -64,6 +64,7 @@ public class Assets {
     public static final String P_EIGHT_BLACK_TEXTURE = "textures/panel_numbers/p_eight_black.png";
 
     // panel letters
+    public static final String P_A_BLACK_TEXTURE = "textures/panel_letters/p_a_black.png";
     public static final String P_B_BLACK_TEXTURE = "textures/panel_letters/p_b_black.png";
     public static final String P_C_BLACK_TEXTURE = "textures/panel_letters/p_c_black.png";
     public static final String P_D_BLACK_TEXTURE = "textures/panel_letters/p_d_black.png";
@@ -160,6 +161,7 @@ public class Assets {
         manager.load(P_SIX_BLACK_TEXTURE, Texture.class);
         manager.load(P_SEVEN_BLACK_TEXTURE, Texture.class);
         manager.load(P_EIGHT_BLACK_TEXTURE, Texture.class);
+        manager.load(P_A_BLACK_TEXTURE, Texture.class);
         manager.load(P_B_BLACK_TEXTURE, Texture.class);
         manager.load(P_C_BLACK_TEXTURE, Texture.class);
         manager.load(P_D_BLACK_TEXTURE, Texture.class);

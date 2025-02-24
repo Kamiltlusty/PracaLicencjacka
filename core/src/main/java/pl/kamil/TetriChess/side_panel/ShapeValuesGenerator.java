@@ -17,8 +17,8 @@ public class ShapeValuesGenerator {
     }
 
     private Character generateLetter() {
-        // generate letter [A, H]
-        return (char) (rand.nextInt(6) + 'A');
+        // generate letter [a, f]
+        return (char) (rand.nextInt(6) + 'a');
     }
 
     private Integer generateNumber() {

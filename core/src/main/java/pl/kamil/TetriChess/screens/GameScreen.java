@@ -49,6 +49,7 @@ public class GameScreen implements Screen, InputProcessor {
     public Texture p_eight_black_texture;
 
     // panel on cubes letters
+    public Texture p_a_black_texture;
     public Texture p_b_black_texture;
     public Texture p_c_black_texture;
     public Texture p_d_black_texture;
@@ -99,6 +100,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     }
     private void initPOnCubesLetters() {
+        p_a_black_texture = assets.manager.get(Assets.P_A_BLACK_TEXTURE);
         p_b_black_texture = assets.manager.get(Assets.P_B_BLACK_TEXTURE);
         p_c_black_texture = assets.manager.get(Assets.P_C_BLACK_TEXTURE);
         p_d_black_texture = assets.manager.get(Assets.P_D_BLACK_TEXTURE);
@@ -106,7 +108,6 @@ public class GameScreen implements Screen, InputProcessor {
         p_f_black_texture = assets.manager.get(Assets.P_F_BLACK_TEXTURE);
         p_g_black_texture = assets.manager.get(Assets.P_G_BLACK_TEXTURE);
         p_h_black_texture = assets.manager.get(Assets.P_H_BLACK_TEXTURE);
-
     }
 
     public void initCubeFields() {
@@ -204,7 +205,7 @@ public class GameScreen implements Screen, InputProcessor {
             );
         }
         for (int j = 0; j < CUBE_FIELD_NUM; j++) {
-            Texture t1 = getPanelLetterTexture(first.getNumber() + j);
+            Texture t1 = getPanelLetterTexture((char)(first.getLetter() + j));
             batch.draw(
                 t1,
                 1000 + j * P_SQUARE_1X1_SIDE,
@@ -215,15 +216,16 @@ public class GameScreen implements Screen, InputProcessor {
         }
     }
 
-    private Texture getPanelLetterTexture(int number) {
-        return switch (number) {
-            case 2 -> p_b_black_texture;
-            case 3 -> p_c_black_texture;
-            case 4 -> p_d_black_texture;
-            case 5 -> p_e_black_texture;
-            case 6 -> p_f_black_texture;
-            case 7 -> p_g_black_texture;
-            case 8 -> p_h_black_texture;
+    private Texture getPanelLetterTexture(char letter) {
+        return switch (letter) {
+            case 'a' -> p_a_black_texture;
+            case 'b' -> p_b_black_texture;
+            case 'c' -> p_c_black_texture;
+            case 'd' -> p_d_black_texture;
+            case 'e' -> p_e_black_texture;
+            case 'f' -> p_f_black_texture;
+            case 'g' -> p_g_black_texture;
+            case 'h' -> p_h_black_texture;
             default -> null;
         };
     }
@@ -259,6 +261,27 @@ public class GameScreen implements Screen, InputProcessor {
                 el.getRectangle().getHeight() * 2 / 3
             );
         }
+        Shape second = gameFlow.getShapesManager().getShapes().get(1);
+        for (int i = 0; i < CUBE_FIELD_NUM; i++) {
+            Texture t1 = getPanelNumTexture(second.getNumber() + i);
+            batch.draw(
+                t1,
+                940,
+                300 + i * P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3
+            );
+        }
+        for (int j = 0; j < CUBE_FIELD_NUM; j++) {
+            Texture t1 = getPanelLetterTexture((char)(second.getLetter() + j));
+            batch.draw(
+                t1,
+                940 + j * P_SQUARE_1X1_SIDE * 2 / 3,
+                300,
+                P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3
+            );
+        }
     }
 
     private void drawMinor2Cube() {
@@ -279,6 +302,27 @@ public class GameScreen implements Screen, InputProcessor {
                 el.getRectangle().getHeight() * 2 / 3
             );
         }
+        Shape third = gameFlow.getShapesManager().getShapes().get(2);
+        for (int i = 0; i < CUBE_FIELD_NUM; i++) {
+            Texture t1 = getPanelNumTexture(third.getNumber() + i);
+            batch.draw(
+                t1,
+                1200,
+                300 + i * P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3
+            );
+        }
+        for (int j = 0; j < CUBE_FIELD_NUM; j++) {
+            Texture t1 = getPanelLetterTexture((char)(third.getLetter() + j));
+            batch.draw(
+                t1,
+                1200 + j * P_SQUARE_1X1_SIDE * 2 / 3,
+                300,
+                P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3
+            );
+        }
     }
 
     private void drawMinor3Cube() {
@@ -297,6 +341,27 @@ public class GameScreen implements Screen, InputProcessor {
                 50 + el.getRectangle().y * 2 / 3,
                 el.getRectangle().getWidth() * 2 / 3,
                 el.getRectangle().getHeight() * 2 / 3
+            );
+        }
+        Shape fourth = gameFlow.getShapesManager().getShapes().get(3);
+        for (int i = 0; i < CUBE_FIELD_NUM; i++) {
+            Texture t1 = getPanelNumTexture(fourth.getNumber() + i);
+            batch.draw(
+                t1,
+                1075,
+                50 + i * P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3
+            );
+        }
+        for (int j = 0; j < CUBE_FIELD_NUM; j++) {
+            Texture t1 = getPanelLetterTexture((char)(fourth.getLetter() + j));
+            batch.draw(
+                t1,
+                1075 + j * P_SQUARE_1X1_SIDE * 2 / 3,
+                50,
+                P_SQUARE_1X1_SIDE * 2 / 3,
+                P_SQUARE_1X1_SIDE * 2 / 3
             );
         }
     }

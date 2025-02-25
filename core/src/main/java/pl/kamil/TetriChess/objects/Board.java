@@ -212,7 +212,7 @@ public class Board {
                                 i,
                                 white_field_texture.getWidth(),
                                 white_field_texture.getHeight()));
-                    }else if (i == 0) {
+                    } else if (i == 0) {
                         fieldsMap.put(fieldSignature,
                             new Field(white_field_texture,
                                 getBlackNumTexture(i), // to be visible it has to be opposite to field color
@@ -655,7 +655,7 @@ public class Board {
      * @return
      */
     private String findFieldSignature(int i, int j) {
-        char letter = (char) ('A' + j);
+        char letter = (char) ('a' + j);
         return new StringBuilder().append(letter).append(i + 1).toString();
     }
 
@@ -663,7 +663,7 @@ public class Board {
         int j = screenX / black_field_texture.getWidth();
         int i = screenY / black_field_texture.getHeight();
         if (j >= 0 && j < 8 && i >= 0 && i < 8) {
-            char letter = (char) ('A' + j);
+            char letter = (char) ('a' + j);
             int idNum = i + 1; // tutaj i jest obliczane z ekranu dlatego nie musze odejmowac od 8
             return new StringBuilder().append(letter).append(idNum).toString();
         } else return "-1";
@@ -672,10 +672,14 @@ public class Board {
         int j = posX;
         int i = posY;
         if (j >= 0 && j < 8 && i >= 0 && i < 8) {
-            char letter = (char) ('A' + j);
+            char letter = (char) ('a' + j);
             int idNum = i + 1; // tutaj i jest obliczane z ekranu dlatego nie musze odejmowac od 8
             return new StringBuilder().append(letter).append(idNum).toString();
         } else return "-1";
+    }
+
+    public void setAllFieldsFree() {
+        fieldsMap.values().forEach(f -> f.setBlockedState(Field.BlockedState.FREE));
     }
 
     public void setSelectedFigureAsEmpty() {

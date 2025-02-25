@@ -3,6 +3,7 @@ package pl.kamil.TetriChess.gameplay;
 import pl.kamil.TetriChess.objects.Board;
 import pl.kamil.TetriChess.objects.Team;
 import pl.kamil.TetriChess.resources.Assets;
+import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
 
 public class GameFlow {
@@ -11,6 +12,7 @@ public class GameFlow {
     private boolean isCheckmate = false;
     private final Board board;
     private final ShapesManager shapesManager;
+    private Shape activeShape;
 
 
     public GameFlow(Assets assets) {
@@ -18,6 +20,7 @@ public class GameFlow {
         this.board = new Board(assets);
         this.shapesManager = new ShapesManager(assets);
         shapesManager.generateShapes();
+        this.activeShape = null;
     }
 
     private void setActive() {
@@ -36,9 +39,14 @@ public class GameFlow {
         return board;
     }
 
+    public Shape getActiveShape() {
+        return activeShape;
+    }
+
     public void prepare() {
         setActive();
-        shapesManager.getShapes().poll();
+        board.setAllFieldsFree();
+        activeShape = shapesManager.getShapes().pollFirst();
         shapesManager.generateShapes();
     }
 }

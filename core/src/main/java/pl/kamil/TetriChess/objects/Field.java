@@ -55,6 +55,22 @@ public class Field {
         return fieldTexture;
     }
 
+    public void setOccupiedState(OccupiedState occupiedState) {
+        this.occupiedState = occupiedState;
+    }
+
+    public void setBlockedState(BlockedState blockedState) {
+        this.blockedState = blockedState;
+    }
+
+    public BlockedState getBlockedState() {
+        return blockedState;
+    }
+
+    public OccupiedState getOccupiedState() {
+        return occupiedState;
+    }
+
     public Texture getNumberTexture() {
         return numberTexture;
     }

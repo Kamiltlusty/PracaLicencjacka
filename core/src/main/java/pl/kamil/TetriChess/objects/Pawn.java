@@ -30,15 +30,19 @@ public class Pawn extends Figure {
                                Figure selectedFigure,
                                Board board
     ) {
-        // transition
         boolean isLegal = true;
+        isLegal = isNotBlocked(initialPosition, board);
+        if (!isLegal) return false;
+        // transition
         isLegal = isTransitionLegal(initialPosition, finalPosition, selectedFigure);
         if (!isLegal) return false;
         // checking if smth is standing on path
-        Tuple2<Vector2, Boolean> isPathFree = selectedFigure.isPathFree(initialPosition, finalPosition, this, board);
-        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFree._1().x, isPathFree._1().y);
+        Tuple2<Vector2, Boolean> isPathBlocksFree = selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board);
+        if (!isPathBlocksFree._2) return false;
+        Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
+        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
         // check if we found figure but we cant beat if final position is not equal figure position
-        if (!isPathFree._2()) {
+        if (!isPathFigureFree._2()) {
             // check if found figure is same team
             if (figure.get().getTeam().equals(selectedFigure.getTeam())) {
                 isLegal = false;
@@ -47,7 +51,7 @@ public class Pawn extends Figure {
                 if (finalPosition.x == initialPosition.x) {
                     isLegal = false;
                 } // don't let figure beat if it is not last chosen field
-                else if (finalPosition.x != isPathFree._1().x || finalPosition.y != isPathFree._1().y) {
+                else if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) {
                     isLegal = false;
                 } else {
                     // beating
@@ -57,10 +61,10 @@ public class Pawn extends Figure {
             }
         }
         // not letting pawn go diagonally without beating
-        if (!hasBeat && initialPosition.x != isPathFree._1().x) {
+        if (!hasBeat && initialPosition.x != isPathFigureFree._1().x) {
             isLegal = false;
         }
-        
+
         // switching hasMoved back to false as it can't move anyway
         if (!isLegal) hasMoved = false;
         // switching back hasBeat so it can beat again and transition properly

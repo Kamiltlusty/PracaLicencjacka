@@ -16,6 +16,7 @@ import pl.kamil.TetriChess.objects.Figure;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.Square1x1;
+import pl.kamil.TetriChess.side_panel.Square3x3;
 
 import java.util.List;
 import java.util.Objects;
@@ -146,15 +147,17 @@ public class GameScreen implements Screen, InputProcessor {
         // draw numbers
         drawNumbers();
         drawFigures();
+        drawActiveShape();
 
         // end drawing
         batch.end();
     }
 
+
     private void drawFigures() {
         for (int k = 0; k < board.figuresList.size(); k++) {
             Figure figure;
-            Field field = board.getFieldsMap().get("A1");
+            Field field = board.getFieldsMap().get("a1");
             if (board.figuresList.get(k) != null) figure = board.figuresList.get(k);
             else continue;
             drawFigure(field, figure);
@@ -172,6 +175,32 @@ public class GameScreen implements Screen, InputProcessor {
         drawMinor1Cube();
         drawMinor2Cube();
         drawMinor3Cube();
+    }
+
+    private void drawActiveShape() {
+        Shape activeShape = gameFlow.getActiveShape();
+        if (activeShape != null) {
+            Character letter = activeShape.getLetter();
+            Integer number = activeShape.getNumber();
+            String fieldSignature = letter + String.valueOf(number);
+            // to make fields blocked
+            Field field = board.getFieldsMap().get(fieldSignature);
+            List<Square1x1> list = activeShape.getSquare3x3().getSquares().values().stream().filter(v -> v.getTexture() != null).toList();
+            for (var el : list) {
+                batch.draw(
+                    el.getTexture(),
+                    field.getPosition().x * SQUARE_1X1_SIDE + el.getRectangle().x,
+                    field.getPosition().y * SQUARE_1X1_SIDE + el.getRectangle().y,
+                    el.getRectangle().getWidth(),
+                    el.getRectangle().getHeight()
+                );
+                String signature = findFieldSignature(
+                    (int) (field.getPosition().y + el.getRectangle().y/SQUARE_1X1_SIDE),
+                    (int) (field.getPosition().x + el.getRectangle().x/SQUARE_1X1_SIDE));
+                Field fieldToBlock = board.getFieldsMap().get(signature);
+                fieldToBlock.setBlockedState(Field.BlockedState.BLOCKED);
+            }
+        }
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
@@ -199,19 +228,19 @@ public class GameScreen implements Screen, InputProcessor {
             batch.draw(
                 t1,
                 1000,
-                550 + i * P_SQUARE_1X1_SIDE,
-                P_SQUARE_1X1_SIDE,
-                P_SQUARE_1X1_SIDE
+                550 + i * SQUARE_1X1_SIDE,
+                SQUARE_1X1_SIDE,
+                SQUARE_1X1_SIDE
             );
         }
         for (int j = 0; j < CUBE_FIELD_NUM; j++) {
             Texture t1 = getPanelLetterTexture((char)(first.getLetter() + j));
             batch.draw(
                 t1,
-                1000 + j * P_SQUARE_1X1_SIDE,
+                1000 + j * SQUARE_1X1_SIDE,
                 550,
-                P_SQUARE_1X1_SIDE,
-                P_SQUARE_1X1_SIDE
+                SQUARE_1X1_SIDE,
+                SQUARE_1X1_SIDE
             );
         }
     }
@@ -267,19 +296,19 @@ public class GameScreen implements Screen, InputProcessor {
             batch.draw(
                 t1,
                 940,
-                300 + i * P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3
+                300 + i * SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3
             );
         }
         for (int j = 0; j < CUBE_FIELD_NUM; j++) {
             Texture t1 = getPanelLetterTexture((char)(second.getLetter() + j));
             batch.draw(
                 t1,
-                940 + j * P_SQUARE_1X1_SIDE * 2 / 3,
+                940 + j * SQUARE_1X1_SIDE * 2 / 3,
                 300,
-                P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3
+                SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3
             );
         }
     }
@@ -308,19 +337,19 @@ public class GameScreen implements Screen, InputProcessor {
             batch.draw(
                 t1,
                 1200,
-                300 + i * P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3
+                300 + i * SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3
             );
         }
         for (int j = 0; j < CUBE_FIELD_NUM; j++) {
             Texture t1 = getPanelLetterTexture((char)(third.getLetter() + j));
             batch.draw(
                 t1,
-                1200 + j * P_SQUARE_1X1_SIDE * 2 / 3,
+                1200 + j * SQUARE_1X1_SIDE * 2 / 3,
                 300,
-                P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3
+                SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3
             );
         }
     }
@@ -349,19 +378,19 @@ public class GameScreen implements Screen, InputProcessor {
             batch.draw(
                 t1,
                 1075,
-                50 + i * P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3
+                50 + i * SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3
             );
         }
         for (int j = 0; j < CUBE_FIELD_NUM; j++) {
             Texture t1 = getPanelLetterTexture((char)(fourth.getLetter() + j));
             batch.draw(
                 t1,
-                1075 + j * P_SQUARE_1X1_SIDE * 2 / 3,
+                1075 + j * SQUARE_1X1_SIDE * 2 / 3,
                 50,
-                P_SQUARE_1X1_SIDE * 2 / 3,
-                P_SQUARE_1X1_SIDE * 2 / 3
+                SQUARE_1X1_SIDE * 2 / 3,
+                SQUARE_1X1_SIDE * 2 / 3
             );
         }
     }
@@ -425,7 +454,7 @@ public class GameScreen implements Screen, InputProcessor {
      * @return
      */
     private String findFieldSignature(int i, int j) {
-        char letter = (char) ('A' + j);
+        char letter = (char) ('a' + j);
         return new StringBuilder().append(letter).append(i + 1).toString();
     }
 
@@ -545,7 +574,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         Vector2 delta = newTouch.cpy().sub(board.getPointerPosition());
         System.out.println("delta" + delta.x + ", " + delta.y);
-        Texture fieldTexture = board.getFieldsMap().get("A1").getFieldTexture();
+        Texture fieldTexture = board.getFieldsMap().get("a1").getFieldTexture();
 
         selectedFigure.ifPresent(figure -> figure.setPosition(
             figure.getPosition().x + delta.x / fieldTexture.getWidth(),

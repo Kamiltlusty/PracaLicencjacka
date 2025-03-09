@@ -16,4 +16,6 @@ public class GlobalVariables {
     public static final float SQUARE_1X1_SIDE = 112;
 
     public static final int BOARD_FIELD_NUM = 8;
+
+    public static final int BOARD_FIELD_SIDE_LENGTH = 112;
 }

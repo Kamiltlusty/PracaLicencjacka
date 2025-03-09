@@ -1,4 +1,4 @@
-package pl.kamil.TetriChess.objects;
+package pl.kamil.TetriChess.board_elements;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;

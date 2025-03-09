@@ -1,21 +1,23 @@
-package pl.kamil.TetriChess.objects;
+package pl.kamil.TetriChess.board_elements.figures;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.vavr.Tuple2;
+import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.Team;
 
 import java.util.Optional;
 
-public class Queen extends Figure {
+public class Bishop extends Figure {
     private String figureId;
     private Texture figureTexture;
     private Vector2 position = new Vector2();
     private Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
     private static final int value = 1;
 
-    public Queen(String queenId, Texture queenTexture, float positionX, float positionY, Team team) {
-        this.figureId = queenId;
-        this.figureTexture = queenTexture;
+    public Bishop(String bishopId, Texture bishopTexture, float positionX, float positionY, Team team) {
+        this.figureId = bishopId;
+        this.figureTexture = bishopTexture;
         this.position.set(positionX, positionY);
         this.team = team;
     }
@@ -24,8 +26,7 @@ public class Queen extends Figure {
     public boolean isMoveLegal(Vector2 initialPosition,
                                Vector2 finalPosition,
                                Figure selectedFigure,
-                               Board board
-    ) {
+                               BoardManager board) {
         boolean isLegal = true;
         isLegal = isNotBlocked(initialPosition, board);
         if (!isLegal) return false;
@@ -51,19 +52,38 @@ public class Queen extends Figure {
                 }
             }
         }
+
         return isLegal;
     }
 
-    boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
+//    private float expecVal(int value) {
+//        return switch (value) {
+//            case 1 -> BigDecimal.valueOf(1.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case 2 -> BigDecimal.valueOf(2.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case 3 -> BigDecimal.valueOf(3.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case 4 -> BigDecimal.valueOf(4.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case 5 -> BigDecimal.valueOf(5.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case 6 -> BigDecimal.valueOf(6.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case 7 -> BigDecimal.valueOf(7.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -1 -> BigDecimal.valueOf(-1.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -2 -> BigDecimal.valueOf(-2.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -3 -> BigDecimal.valueOf(-3.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -4 -> BigDecimal.valueOf(-4.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -5 -> BigDecimal.valueOf(-5.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -6 -> BigDecimal.valueOf(-6.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            case -7 -> BigDecimal.valueOf(-7.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
+//            default -> throw new IllegalStateException("Unexpected value: " + value);
+//        };
+//    }
+
+    private boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
         boolean isLegal = true;
 
         float moveDistanceY = Math.abs(finalPosition.y - initialPosition.y);
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
         System.out.println("moveDistanceY: " + moveDistanceY);
         System.out.println("moveDistanceX: " + moveDistanceX);
-        if (moveDistanceY == moveDistanceX ||
-            moveDistanceX != 0.0 && moveDistanceY == 0.0 ||
-            moveDistanceX == 0.0 && moveDistanceY != 0.0) {
+        if (moveDistanceY == moveDistanceX) {
         } else isLegal = false;
 
         return isLegal;

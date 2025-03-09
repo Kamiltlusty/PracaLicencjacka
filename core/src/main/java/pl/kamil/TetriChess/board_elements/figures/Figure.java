@@ -1,25 +1,28 @@
-package pl.kamil.TetriChess.objects;
+package pl.kamil.TetriChess.board_elements.figures;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.vavr.Tuple2;
+import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.Field;
+import pl.kamil.TetriChess.board_elements.Team;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public abstract class Figure {
-    public abstract boolean isMoveLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Board board);
+    public abstract boolean isMoveLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board);
     public abstract Vector2 getPosition();
     public abstract String getFigureId();
     public abstract Team getTeam();
     public abstract Texture getFigureTexture();
     public abstract Vector2 setPosition(float x, float y);
-    protected boolean isNotBlocked(Vector2 initialPosition, Board board) {
-        String fieldSignature = board.findFieldSignatureByCoordinates((int) initialPosition.x, (int) initialPosition.y);
+    protected boolean isNotBlocked(Vector2 initialPosition, BoardManager board) {
+        String fieldSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) initialPosition.x, (int) initialPosition.y);
         Field field = board.getFieldsMap().get(fieldSignature);
         return field.getBlockedState() != Field.BlockedState.BLOCKED;
     }
-    protected Tuple2<Vector2, Boolean> isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Board board) {
+    protected Tuple2<Vector2, Boolean> isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         // check is path figure free
         // how figure moved up/left/diagonally
         System.out.println("finalPosition: " + finalPosition + ", initialPosition: " + initialPosition);
@@ -35,7 +38,7 @@ public abstract class Figure {
                 // set that we checked final field
                 isFinalAgain = (finalPosition.y == checkPosY && finalPosition.x == checkPosX);
                 // seek for figure
-                String foundSignature = board.findFieldSignatureByCoordinates((int) checkPosX, (int) checkPosY);
+                String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) checkPosY);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
@@ -55,7 +58,7 @@ public abstract class Figure {
                 // set that we checked final field
                 isFinalAgain = (finalPosition.y == checkPosY);
                 // seek for figure
-                String foundSignature = board.findFieldSignatureByCoordinates((int) initialPosition.x, (int) checkPosY);
+                String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) initialPosition.x, (int) checkPosY);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
@@ -73,7 +76,7 @@ public abstract class Figure {
                 // set that we checked final field
                 isFinalAgain = (finalPosition.x == checkPosX);
                 // seek for figure
-                String foundSignature = board.findFieldSignatureByCoordinates((int) checkPosX, (int) initialPosition.y);
+                String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) initialPosition.y);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
@@ -87,7 +90,7 @@ public abstract class Figure {
         // check is path blocks free
         return new Tuple2<>(new Vector2(finalPosition.x, finalPosition.y), true);
     }
-    protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Board board) {
+    protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         // check is path figure free
         // how figure moved up/left/diagonally
         System.out.println("finalPosition: " + finalPosition + ", initialPosition: " + initialPosition);
@@ -103,7 +106,7 @@ public abstract class Figure {
                 // set that we checked final field
                 isFinalAgain = (finalPosition.y == checkPosY && finalPosition.x == checkPosX);
                 // seek for figure
-                String foundSignature = board.findFieldSignatureByCoordinates((int) checkPosX, (int) checkPosY);
+                String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) checkPosY);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     Field field = board.getFieldsMap().get(foundSignature);
@@ -123,7 +126,7 @@ public abstract class Figure {
                 // set that we checked final field
                 isFinalAgain = (finalPosition.y == checkPosY);
                 // seek for figure
-                String foundSignature = board.findFieldSignatureByCoordinates((int) initialPosition.x, (int) checkPosY);
+                String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) initialPosition.x, (int) checkPosY);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     Field field = board.getFieldsMap().get(foundSignature);
@@ -141,7 +144,7 @@ public abstract class Figure {
                 // set that we checked final field
                 isFinalAgain = (finalPosition.x == checkPosX);
                 // seek for figure
-                String foundSignature = board.findFieldSignatureByCoordinates((int) checkPosX, (int) initialPosition.y);
+                String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) initialPosition.y);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     Field field = board.getFieldsMap().get(foundSignature);

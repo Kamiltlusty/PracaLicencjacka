@@ -1,8 +1,10 @@
-package pl.kamil.TetriChess.objects;
+package pl.kamil.TetriChess.board_elements.figures;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.vavr.Tuple2;
+import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.Team;
 
 import java.util.Optional;
 
@@ -26,7 +28,7 @@ public class King extends Figure {
     public boolean isMoveLegal(Vector2 initialPosition,
                                Vector2 finalPosition,
                                Figure selectedFigure,
-                               Board board
+                               BoardManager board
     ) {
         boolean isLegal = true;
         isLegal = isNotBlocked(initialPosition, board);

@@ -1,8 +1,11 @@
-package pl.kamil.TetriChess.objects;
+package pl.kamil.TetriChess.board_elements.figures;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.vavr.Tuple2;
+import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.Field;
+import pl.kamil.TetriChess.board_elements.Team;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -25,7 +28,7 @@ public class Knigth extends Figure {
     public boolean isMoveLegal(Vector2 initialPosition,
                                Vector2 finalPosition,
                                Figure selectedFigure,
-                               Board board
+                               BoardManager board
     ) {
         boolean isLegal = true;
         isLegal = isNotBlocked(initialPosition, board);
@@ -76,8 +79,8 @@ public class Knigth extends Figure {
         return isLegal;
     }
 
-    protected Tuple2<Vector2, Boolean> isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Board board) {
-        String foundSignature = board.findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
+    protected Tuple2<Vector2, Boolean> isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
+        String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
         if (!Objects.equals(foundSignature, "-1")) {
             // checking figure
             Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
@@ -88,8 +91,8 @@ public class Knigth extends Figure {
         }
         return new Tuple2<>(new Vector2(), true);
     }
-    protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Board board) {
-        String foundSignature = board.findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
+    protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
+        String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
         if (!Objects.equals(foundSignature, "-1")) {
             // checking figure
             Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);

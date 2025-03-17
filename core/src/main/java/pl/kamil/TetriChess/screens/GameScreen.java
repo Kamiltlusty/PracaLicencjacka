@@ -4,19 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.drawing.DrawManager;
 import pl.kamil.TetriChess.gameplay.GameFlow;
-import pl.kamil.TetriChess.board_elements.BoardManager;
-import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.resources.Assets;
-
-import java.util.Objects;
-import java.util.Optional;
 
 import static pl.kamil.TetriChess.resources.GlobalVariables.MIN_WORLD_HEIGHT;
 import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_WIDTH;
@@ -29,7 +24,7 @@ public class GameScreen implements Screen, InputProcessor {
     private final DrawManager drawManager;
 
     // boards
-    private BoardManager board;
+    private BoardManager boardManager;
 
     public GameScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets) {
         this.gameFlow = gameFlow;
@@ -45,8 +40,8 @@ public class GameScreen implements Screen, InputProcessor {
         );
 
         // create board
-        board = gameFlow.getBoard();
-        this.drawManager = new DrawManager(assets, board, batch, gameFlow);
+        boardManager = gameFlow.getBoard();
+        this.drawManager = new DrawManager(assets, boardManager, batch, gameFlow);
     }
 
     @Override
@@ -134,107 +129,56 @@ public class GameScreen implements Screen, InputProcessor {
         return false;
     }
 
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+    public int transformY(int screenY) {
         // Reverse of Y for screen counting from left top corner to left bottom
         float screenHeight = Gdx.graphics.getHeight();
-        int transformedY = (int) (screenHeight - screenY);
+        return (int) (screenHeight - screenY);
+    }
 
-        // mark/search for marked field
-        String foundSignature = board.getBoardUtils().findFieldSignatureByScreenCoordinates(screenX, transformedY);
-        Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-        // finding pawn
-        board.findFigureByCoordinates(fieldCoordinates.x, fieldCoordinates.y);
-        // remembering pointer position
-        board.setPointerPosition(screenX, transformedY);
-        board.setInitialPointerPosition(board.getPointerPosition().x, board.getPointerPosition().y);
-        board.setInitialFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
-        System.out.println("initial before" + board.getInitialPointerPosition().x + ", " + board.getInitialPointerPosition().y);
+    public float transformY(int screenY, boolean isFloat) {
+        // Reverse of Y for screen counting from left top corner to left bottom
+        float screenHeight = Gdx.graphics.getHeight();
+        return screenHeight - screenY;
+    }
 
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        int transformedY = transformY(screenY);
+
+        Vector2 fieldCoordinates = boardManager.detectFigureOnClick(screenX, transformedY);
+        // saves all pointer position for usage in touchDragged and touchUp
+        boardManager.savePointerPositionInBoardManager(screenX, transformedY, fieldCoordinates);
         return false;
     }
+
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        // Reverse of Y for screen counting from left top corner to left bottom
-        float screenHeight = Gdx.graphics.getHeight();
-        float transformedY = screenHeight - screenY;
+        float transformedY = transformY(screenY, true);
 
-        Optional<Figure> selectedFigure = board.getSelectedFigure();
-        // counting difference between two pointer positions
-
-        Vector2 newTouch = new Vector2(screenX, transformedY);
-        System.out.println("aktualny: " + board.getPointerPosition().x + ", " + board.getPointerPosition().y);
-        System.out.println("nowy: " + newTouch.x + ", " + newTouch.y);
-
-        Vector2 delta = newTouch.cpy().sub(board.getPointerPosition());
-        System.out.println("delta" + delta.x + ", " + delta.y);
-        Texture fieldTexture = board.getFieldsMap().get("a1").getFieldTexture();
-
-        selectedFigure.ifPresent(figure -> figure.setPosition(
-            figure.getPosition().x + delta.x / fieldTexture.getWidth(),
-            figure.getPosition().y + delta.y / fieldTexture.getHeight()));
-        board.setPointerPosition(newTouch.x, newTouch.y);
+        boardManager.moveFigureOverBoard(screenX, transformedY);
         return false;
     }
 
+
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        // Reverse of Y for screen counting from left top corner changed to left bottom
-        float screenHeight = Gdx.graphics.getHeight();
-        int transformedY = (int) (screenHeight - screenY);
+        int transformedY = transformY(screenY);
 
-
-        boolean allValid = true;
-        // search for field to drop figure
-        String foundSignature = board.getBoardUtils().findFieldSignatureByScreenCoordinates(screenX, transformedY);
-        // check if field was found
-        if (!Objects.equals(foundSignature, "-1")) {
-            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-            board.setFinalFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
-
-            Optional<Figure> selectedFigure = board.getSelectedFigure();
-//            Field field = board.getFieldsMap().get("A1");
-            if (selectedFigure.isPresent() &&
-                gameFlow.getActive().equals(selectedFigure.get().getTeam()) &&
-                selectedFigure.get().isMoveLegal(
-                    board.getInitialFieldPosition(),
-                    board.getFinalFieldPosition(),
-                    selectedFigure.get(),
-                    board
-                )
-            ) {
-                // if figure stays at the same position do not count it as a move
-                if (board.getInitialFieldPosition().x == board.getFinalFieldPosition().x
-                    && board.getInitialFieldPosition().y == board.getFinalFieldPosition().y) {
-                    allValid = false;
-                } else {
-                    selectedFigure.get().setPosition(
-                        fieldCoordinates.x,
-                        fieldCoordinates.y
-                    );
-                }
-            } else allValid = false;
-        } else allValid = false;
+        // if everything is ok puts figure on place else return false
+        boolean allValid = boardManager.isFigurePlaceable(screenX, transformedY);
 
         if (!allValid) {
-            Optional<Figure> selectedFigure = board.getSelectedFigure();
-            // to make figure come back it needs to be set with field coordinates to become normalized and not go outside chessboard
-            foundSignature = board.getBoardUtils().findFieldSignatureByScreenCoordinates((int) board.getInitialPointerPosition().x, (int) board.getInitialPointerPosition().y);
-            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-            selectedFigure.ifPresent(figure -> figure.setPosition(
-                fieldCoordinates.x,
-                fieldCoordinates.y
-            ));
+            boardManager.UndoFigurePlacement();
         } else {
+            gameFlow.isCheck();
             // prepare for next move
             gameFlow.prepare();
         }
 
-        board.setSelectedFigureAsEmpty();
+        boardManager.setSelectedFigureAsEmpty();
         return false;
     }
-
 
     @Override
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {

@@ -28,10 +28,15 @@ public class Rook extends Figure {
     public boolean isMoveLegal(Vector2 initialPosition,
                                Vector2 finalPosition,
                                Figure selectedFigure,
-                               BoardManager board
+                               BoardManager board,
+                               boolean isCheckingExpose
     ) {
         boolean isLegal = true;
         isLegal = isNotBlocked(initialPosition, board);
+        if (!isLegal) return false;
+        if (!isCheckingExpose) {
+            isLegal = !isMoveExposingKingToCheck(board, initialPosition, finalPosition);
+        }
         if (!isLegal) return false;
         // transition
         isLegal = isTransitionLegal(initialPosition, finalPosition);
@@ -50,8 +55,10 @@ public class Rook extends Figure {
                 if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) {
                     isLegal = false;
                 } else {
-                    // beating
-                    board.figuresList.remove(figure.get());
+                    // beating if figure is not king
+                    if (!figure.get().getFigureId().equals("K")) {
+                        board.figuresList.remove(figure.get());
+                    }
                 }
             }
         }

@@ -1,10 +1,19 @@
 package pl.kamil.TetriChess.gameplay;
 
+import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
+import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.resources.Assets;
+import pl.kamil.TetriChess.resources.GlobalVariables;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GameFlow {
     private Team active = Team.WHITE;
@@ -17,7 +26,7 @@ public class GameFlow {
 
     public GameFlow(Assets assets) {
         // crate new game/board
-        this.board = new BoardManager(assets);
+        this.board = new BoardManager(assets, this);
         this.shapesManager = new ShapesManager(assets);
         shapesManager.generateShapes();
         this.activeShape = null;
@@ -49,4 +58,11 @@ public class GameFlow {
         activeShape = shapesManager.getShapes().pollFirst();
         shapesManager.generateShapes();
     }
+
+    public void isCheck() {
+        isCheck = board.isCheck(active);
+    }
+
+
+
 }

@@ -1,8 +1,8 @@
 package pl.kamil.TetriChess.drawing;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
 
 public class DrawManager {
@@ -27,7 +27,6 @@ public class DrawManager {
         initializeDrawUtils();
         // initialize Drawers
         initializeDrawers();
-
     }
 
     private void initializeDrawUtils() {

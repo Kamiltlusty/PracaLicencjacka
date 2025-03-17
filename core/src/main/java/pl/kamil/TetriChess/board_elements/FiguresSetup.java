@@ -84,7 +84,7 @@ public class FiguresSetup {
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
         int idNum = j + 1;
         board.figuresList.add(new King(
-                "K" + idNum, // zle
+                "K",
                 king_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -99,7 +99,7 @@ public class FiguresSetup {
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
         int idNum = j + 1;
         board.figuresList.add(new King(
-                "K" + idNum, // zle
+                "K",
                 king_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,

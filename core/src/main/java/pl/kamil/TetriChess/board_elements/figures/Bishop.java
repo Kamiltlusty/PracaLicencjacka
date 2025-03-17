@@ -26,9 +26,15 @@ public class Bishop extends Figure {
     public boolean isMoveLegal(Vector2 initialPosition,
                                Vector2 finalPosition,
                                Figure selectedFigure,
-                               BoardManager board) {
+                               BoardManager board,
+                               boolean isCheckingExpose
+    ) {
         boolean isLegal = true;
         isLegal = isNotBlocked(initialPosition, board);
+        if (!isLegal) return false;
+        if (!isCheckingExpose) {
+            isLegal = !isMoveExposingKingToCheck(board, initialPosition, finalPosition);
+        }
         if (!isLegal) return false;
         // transition
         isLegal = isTransitionLegal(initialPosition, finalPosition);
@@ -40,6 +46,7 @@ public class Bishop extends Figure {
         Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
         // check if we found figure
         if (!isPathFigureFree._2()) {
+
             // check if found figure is same team
             if (figure.get().getTeam().equals(selectedFigure.getTeam())) {
                 isLegal = false;
@@ -47,8 +54,10 @@ public class Bishop extends Figure {
                 if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) {
                     isLegal = false;
                 } else {
-                    // beating
-                    board.figuresList.remove(figure.get());
+                    // beating if figure is not king
+                    if (!figure.get().getFigureId().equals("K")) {
+                        board.figuresList.remove(figure.get());
+                    }
                 }
             }
         }

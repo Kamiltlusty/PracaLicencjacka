@@ -29,73 +29,37 @@ public class Bishop extends Figure {
                                BoardManager board,
                                boolean isCheckingExpose
     ) {
-        boolean isLegal = true;
-        isLegal = isNotBlocked(initialPosition, board);
-        if (!isLegal) return false;
-        if (!isCheckingExpose) {
-            isLegal = !isMoveExposingKingToCheck(board, initialPosition, finalPosition);
-        }
-        if (!isLegal) return false;
+        if (!isNotBlocked(initialPosition, board)) return false;
+        if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
         // transition
-        isLegal = isTransitionLegal(initialPosition, finalPosition);
-        if (!isLegal) return false;
+        if (!isTransitionLegal(initialPosition, finalPosition)) return false;
         // checking if smth is standing on path
-        Tuple2<Vector2, Boolean> isPathBlocksFree = selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board);
-        if (!isPathBlocksFree._2) return false;
+        if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
+
         Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
         Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
         // check if we found figure
         if (!isPathFigureFree._2()) {
-
             // check if found figure is same team
-            if (figure.get().getTeam().equals(selectedFigure.getTeam())) {
-                isLegal = false;
-            } else {
-                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) {
-                    isLegal = false;
-                } else {
+            if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
+            else {
+                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
+                else {
                     // beating if figure is not king
                     if (!figure.get().getFigureId().equals("K")) {
                         board.figuresList.remove(figure.get());
+                        return true;
                     }
                 }
             }
         }
-
-        return isLegal;
+        return true;
     }
 
-//    private float expecVal(int value) {
-//        return switch (value) {
-//            case 1 -> BigDecimal.valueOf(1.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case 2 -> BigDecimal.valueOf(2.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case 3 -> BigDecimal.valueOf(3.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case 4 -> BigDecimal.valueOf(4.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case 5 -> BigDecimal.valueOf(5.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case 6 -> BigDecimal.valueOf(6.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case 7 -> BigDecimal.valueOf(7.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -1 -> BigDecimal.valueOf(-1.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -2 -> BigDecimal.valueOf(-2.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -3 -> BigDecimal.valueOf(-3.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -4 -> BigDecimal.valueOf(-4.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -5 -> BigDecimal.valueOf(-5.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -6 -> BigDecimal.valueOf(-6.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            case -7 -> BigDecimal.valueOf(-7.0 * sqrt(2)).setScale(2, RoundingMode.HALF_UP).floatValue();
-//            default -> throw new IllegalStateException("Unexpected value: " + value);
-//        };
-//    }
-
     private boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
-        boolean isLegal = true;
-
         float moveDistanceY = Math.abs(finalPosition.y - initialPosition.y);
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
-        System.out.println("moveDistanceY: " + moveDistanceY);
-        System.out.println("moveDistanceX: " + moveDistanceX);
-        if (moveDistanceY == moveDistanceX) {
-        } else isLegal = false;
-
-        return isLegal;
+        return moveDistanceY == moveDistanceX;
     }
 
     public String getFigureId() {

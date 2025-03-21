@@ -31,39 +31,31 @@ public class Knigth extends Figure {
                                BoardManager board,
                                boolean isCheckingExpose
     ) {
-        boolean isLegal = true;
-        isLegal = isNotBlocked(initialPosition, board);
-        if (!isLegal) return false;
-        if (!isCheckingExpose) {
-            isLegal = !isMoveExposingKingToCheck(board, initialPosition, finalPosition);
-        }
-        if (!isLegal) return false;
+        if (!isNotBlocked(initialPosition, board)) return false;
+        if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
         // transition
-        isLegal = isTransitionLegal(initialPosition, finalPosition);
-        if (!isLegal) return false;
+        if (!isTransitionLegal(initialPosition, finalPosition)) return false;
         // checking if smth is standing on path
-        Tuple2<Vector2, Boolean> isPathBlocksFree = selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board);
-        if (!isPathBlocksFree._2) return false;
-        Tuple2<Vector2, Boolean> isPathFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
-        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFree._1().x, isPathFree._1().y);
+        if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
+
+        Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
+        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
         // check if we found figure
-        if (!isPathFree._2()) {
+        if (!isPathFigureFree._2()) {
             // check if found figure is same team
-            if (figure.get().getTeam().equals(selectedFigure.getTeam())) {
-                isLegal = false;
-            } else {
-                if (finalPosition.x != isPathFree._1().x || finalPosition.y != isPathFree._1().y) {
-                    isLegal = false;
-                } else {
+            if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
+            else {
+                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
+                else {
                     // beating if figure is not king
                     if (!figure.get().getFigureId().equals("K")) {
                         board.figuresList.remove(figure.get());
+                        return true;
                     }
                 }
             }
         }
-
-        return isLegal;
+        return true;
     }
 
     boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {

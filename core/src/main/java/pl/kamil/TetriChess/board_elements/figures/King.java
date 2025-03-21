@@ -31,72 +31,63 @@ public class King extends Figure {
                                BoardManager board,
                                boolean isCheckingExpose
     ) {
-        boolean isLegal = true;
-        isLegal = isNotBlocked(initialPosition, board);
-        if (!isLegal) return false;
+        if (!isNotBlocked(initialPosition, board)) return false;
         // transition
-        isLegal = isTransitionLegal(initialPosition, finalPosition);
-        if (!isLegal) return false;
+        if (!isTransitionLegal(initialPosition, finalPosition)) return false;
         // checking if smth is standing on path
-        Tuple2<Vector2, Boolean> isPathBlocksFree = selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board);
-        if (!isPathBlocksFree._2) return false;
+        if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
+
         Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
         Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
         // check if we found figure
         if (!isPathFigureFree._2()) {
             // check if found figure is same team
-            if (figure.get().getTeam().equals(selectedFigure.getTeam())) {
-                isLegal = false;
-            } else {
-                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) {
-                    isLegal = false;
-                } else {
+            if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
+            else {
+                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
+                else {
                     // beating if figure is not king
                     if (!figure.get().getFigureId().equals("K")) {
                         board.figuresList.remove(figure.get());
+                        return true;
                     }
                 }
             }
         }
         // castling
-        if (!hasMoved && finalPosition.x == 6.0 && finalPosition.y == 0.0) {
+        if (moveCounter == 0 && finalPosition.x == 6.0 && finalPosition.y == 0.0) {
             Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(7, 0);
-            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+            if (rook.isPresent() && rook.get() instanceof Rook && rook.get().getMoveCounter() == 0) {
                 rook.get().setPosition(5.0f, 0.0f);
                 ((Rook) rook.get()).setHasMoved(true);
-            }
-        } else if (!hasMoved && finalPosition.x == 2.0 && finalPosition.y == 0.0) {
+            } else return false;
+        } else if (moveCounter == 0 && finalPosition.x == 2.0 && finalPosition.y == 0.0) {
             Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(0, 0);
-            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+            if (rook.isPresent() && rook.get() instanceof Rook && rook.get().getMoveCounter() == 0) {
                 rook.get().setPosition(3.0f, 0.0f);
                 ((Rook) rook.get()).setHasMoved(true);
-            }
-        } else if (!hasMoved && finalPosition.x == 6.0 && finalPosition.y == 7.0) {
+            } else return false;
+        } else if (moveCounter == 0 && finalPosition.x == 6.0 && finalPosition.y == 7.0) {
             Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(7, 7);
-            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+            if (rook.isPresent() && rook.get() instanceof Rook && rook.get().getMoveCounter() == 0) {
                 rook.get().setPosition(5.0f, 7.0f);
                 ((Rook) rook.get()).setHasMoved(true);
-            }
-        } else if (!hasMoved && finalPosition.x == 2.0 && finalPosition.y == 7.0) {
+            } else return false;
+        } else if (moveCounter == 0 && finalPosition.x == 2.0 && finalPosition.y == 7.0) {
             Optional<Figure> rook = board.findFigureByCoordinatesAndReturn(0, 7);
-            if (rook.isPresent() && rook.get() instanceof Rook && !((Rook) rook.get()).getHasMoved()) {
+            if (rook.isPresent() && rook.get() instanceof Rook && rook.get().getMoveCounter() == 0) {
                 rook.get().setPosition(3.0f, 7.0f);
                 ((Rook) rook.get()).setHasMoved(true);
-            }
+            } else return false;
         }
-        hasMoved = isLegal ? true : false;
-        return isLegal;
+        return true;
     }
 
     boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
-        boolean isLegal = true;
-
         float moveDistanceY = Math.abs(finalPosition.y - initialPosition.y);
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
-        System.out.println("moveDistanceY: " + moveDistanceY);
-        System.out.println("moveDistanceX: " + moveDistanceX);
-        if (!hasMoved) {
-            if (!(moveDistanceX <= 1.0 && moveDistanceY <= 1.0 ||
+        if (moveCounter == 0) {
+            return (moveDistanceX <= 1.0 && moveDistanceY <= 1.0 ||
                 moveDistanceX <= 2.0 && moveDistanceY <= 2.0 &&
                     initialPosition.x == 4.0 && initialPosition.y == 0.0 &&
                     finalPosition.x == 6.0 && finalPosition.y == 0.0 ||
@@ -108,17 +99,10 @@ public class King extends Figure {
                     finalPosition.x == 6.0 && finalPosition.y == 7.0 ||
                 moveDistanceX <= 2.0 && moveDistanceY <= 2.0 &&
                     initialPosition.x == 4.0 && initialPosition.y == 7.0 &&
-                    finalPosition.x == 2.0 && finalPosition.y == 7.0)
-            ) {
-                isLegal = false;
-            }
+                    finalPosition.x == 2.0 && finalPosition.y == 7.0);
         } else {
-            if (!(moveDistanceX <= 1.0 && moveDistanceY <= 1.0)) {
-                isLegal = false;
-            }
+            return moveDistanceX <= 1.0 && moveDistanceY <= 1.0;
         }
-
-        return isLegal;
     }
 
     public String getFigureId() {

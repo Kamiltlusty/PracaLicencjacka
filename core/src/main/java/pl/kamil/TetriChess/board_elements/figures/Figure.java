@@ -18,6 +18,9 @@ public abstract class Figure {
     public abstract Team getTeam();
     public abstract Texture getFigureTexture();
     public abstract Vector2 setPosition(float x, float y);
+    protected Integer moveCounter = 0;
+    public Integer getMoveCounter() {return moveCounter;}
+    public void setMoveCounter(Integer moveCounter) {this.moveCounter = moveCounter;}
     protected boolean isMoveExposingKingToCheck(BoardManager board, Vector2 initialPosition, Vector2 finalPosition) {
         // moving away figure and checking whether this made check occurs
         this.setPosition(finalPosition.x, finalPosition.y);

@@ -143,7 +143,6 @@ public class BoardManager {
     }
 
     public boolean isFigurePlaceable(int screenX, int transformedY) {
-        boolean allValid = true;
         // search for field to drop figure
         String foundSignature = getBoardUtils().findFieldSignatureByScreenCoordinates(screenX, transformedY);
         // check if field was found
@@ -152,30 +151,28 @@ public class BoardManager {
             setFinalFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
 
             Optional<Figure> selectedFigure = getSelectedFigure();
-            if (selectedFigure.isPresent() &&
-                gameFlow.getActive().equals(selectedFigure.get().getTeam()) &&
-                selectedFigure.get().isMoveLegal(
+            Figure figure = selectedFigure.get();
+            if (gameFlow.getActive().equals(figure.getTeam()) &&
+                figure.isMoveLegal(
                     getInitialFieldPosition(),
                     getFinalFieldPosition(),
-                    selectedFigure.get(),
+                    figure,
                     this,
                     false
-                )
-            ) {
+                )) {
                 // if figure stays at the same position do not count it as a move
-                if (getInitialFieldPosition().x == getFinalFieldPosition().x
-                    && getInitialFieldPosition().y == getFinalFieldPosition().y) {
-                    allValid = false;
-                } else {
-                    selectedFigure.get().setPosition(
+                if ((getInitialFieldPosition().x == getFinalFieldPosition().x
+                    && getInitialFieldPosition().y == getFinalFieldPosition().y)) return false;
+                else {
+                    figure.setMoveCounter(figure.getMoveCounter() + 1);
+                    figure.setPosition(
                         fieldCoordinates.x,
                         fieldCoordinates.y
                     );
                 }
-
-            } else allValid = false;
-        } else allValid = false;
-        return allValid;
+            } else return false;
+        }
+        return true;
     }
 
     public void moveFigureOverBoard(int screenX, float transformedY) {

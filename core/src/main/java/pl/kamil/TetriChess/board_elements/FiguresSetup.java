@@ -52,9 +52,8 @@ public class FiguresSetup {
         int i = 7;
         int j = 3;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new Queen(
-                "Q" + idNum, // zle
+                "Q",
                 queen_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -67,9 +66,8 @@ public class FiguresSetup {
         int i = 0;
         int j = 3;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new Queen(
-                "Q" + idNum, // zle
+                "Q",
                 queen_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -82,7 +80,6 @@ public class FiguresSetup {
         int i = 0;
         int j = 4;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new King(
                 "K",
                 king_texture_white,
@@ -97,7 +94,6 @@ public class FiguresSetup {
         int i = 7;
         int j = 4;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new King(
                 "K",
                 king_texture_black,
@@ -113,9 +109,8 @@ public class FiguresSetup {
         int i = 7;
         int j = 2;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new Bishop(
-                "b" + idNum, // zle
+                "b1",
                 bishop_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -124,9 +119,8 @@ public class FiguresSetup {
         );
         j = 5;
         fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        idNum = j + 1;
         board.figuresList.add(new Bishop(
-                "b" + idNum, // zle
+                "b2",
                 bishop_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -139,9 +133,8 @@ public class FiguresSetup {
         int i = 0;
         int j = 2;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new Bishop(
-                "b" + idNum, // zle
+                "b1",
                 bishop_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -150,9 +143,8 @@ public class FiguresSetup {
         );
         j = 5;
         fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        idNum = j + 1;
         board.figuresList.add(new Bishop(
-                "b" + idNum, // zle
+                "b2",
                 bishop_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -168,7 +160,7 @@ public class FiguresSetup {
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
         int idNum = j + 1;
         board.figuresList.add(new Knigth(
-                "k" + idNum, // zle
+                "k1",
                 knight_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -179,7 +171,7 @@ public class FiguresSetup {
         fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
         idNum = j + 1;
         board.figuresList.add(new Knigth(
-                "k" + idNum, // zle
+                "k2",
                 knight_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -192,9 +184,8 @@ public class FiguresSetup {
         int i = 7;
         int j = 1;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new Knigth(
-                "k" + idNum, // zle
+                "k1",
                 knight_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -203,9 +194,8 @@ public class FiguresSetup {
         );
         j = 6;
         fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        idNum = j + 1;
         board.figuresList.add(new Knigth(
-                "k" + idNum, // zle
+                "k2",
                 knight_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -218,9 +208,8 @@ public class FiguresSetup {
         int i = 0;
         int j = 0;
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        int idNum = j + 1;
         board.figuresList.add(new Rook(
-                "r" + idNum, // zle
+                "r1",
                 rook_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -229,9 +218,8 @@ public class FiguresSetup {
         );
         j = 7;
         fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        idNum = j + 1;
         board.figuresList.add(new Rook(
-                "r" + idNum, // zle
+                "r2",
                 rook_texture_white,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -246,7 +234,7 @@ public class FiguresSetup {
         String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
         int idNum = j + 1;
         board.figuresList.add(new Rook(
-                "r" + idNum,
+                "r1",
                 rook_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,
@@ -255,9 +243,8 @@ public class FiguresSetup {
         );
         j = 7;
         fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
-        idNum = j + 1;
         board.figuresList.add(new Rook(
-                "r" + idNum,
+                "r2",
                 rook_texture_black,
                 board.getFieldsMap().get(fieldSignature).getPosition().x,
                 board.getFieldsMap().get(fieldSignature).getPosition().y,

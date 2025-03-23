@@ -14,7 +14,9 @@ public class BoardManager {
     private final Assets assets;
     private final BoardUtils boardUtils;
     private final GameFlow gameFlow;
-    private Optional<Figure> selectedFigure;
+    private Figure selectedFigure;
+    private String capturedFigureId;
+    private boolean isCapture;
     private Vector2 initialPointerPosition;
     private Vector2 pointerPosition;
     private Vector2 initialFieldPosition;
@@ -28,9 +30,10 @@ public class BoardManager {
         figuresList = new ArrayList<>();
         fieldsMap = new HashMap<>();
         this.assets = assets;
+        this.isCapture = false;
 
         // set selected figure as empty
-        this.selectedFigure = Optional.empty();
+        this.selectedFigure = null;
         // initialize mouse pointer
         this.pointerPosition = new Vector2();
         this.initialPointerPosition = new Vector2();
@@ -46,6 +49,37 @@ public class BoardManager {
         // draw the chessboard
         fieldsSetup.setFieldsMap();
         setFiguresInitially();
+    }
+
+    public BoardManager(Assets assets,
+                        GameFlow gameFlow,
+                        Map<String, Field> fieldsMap,
+                        List<Figure> figuresList,
+                        BoardUtils boardUtils,
+                        Figure selectedFigure,
+                        String capturedFigureId,
+                        boolean isCapture,
+                        Vector2 initialPointerPosition,
+                        Vector2 pointerPosition,
+                        Vector2 initialFieldPosition,
+                        Vector2 finalFieldPosition,
+                        FieldsSetup fieldsSetup,
+                        FiguresSetup figuresSetup
+                        ) {
+        this.assets = assets;
+        this.gameFlow = gameFlow;
+        this.fieldsMap = fieldsMap;
+        this.figuresList = figuresList;
+        this.boardUtils = boardUtils;
+        this.selectedFigure = selectedFigure;
+        this.capturedFigureId = capturedFigureId;
+        this.isCapture = isCapture;
+        this.initialPointerPosition = initialPointerPosition;
+        this.pointerPosition = pointerPosition;
+        this.initialFieldPosition  = initialFieldPosition;
+        this.finalFieldPosition  = finalFieldPosition;
+        this.fieldsSetup = fieldsSetup;
+        this.figuresSetup = figuresSetup;
     }
 
     public Vector2 getInitialPointerPosition() {
@@ -115,88 +149,132 @@ public class BoardManager {
         figuresSetup.setPlayerQueen();
     }
 
-    public boolean isCheck(Team active) {
-        List<Figure> threateningFigures;
-        if (active == Team.WHITE) {
-            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("K") && f.getTeam() == Team.BLACK).findFirst().get();
-            List<Figure> whiteFigures = figuresList.stream().filter(f -> f.getTeam() == Team.WHITE).toList();
-            threateningFigures = whiteFigures.stream().filter(f -> f.isMoveLegal(f.getPosition(), blackKing.getPosition(), f, this, true)).toList();
-        } else {
-            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("K") && f.getTeam() == Team.WHITE).findFirst().get();
-            List<Figure> whiteFigures = figuresList.stream().filter(f -> f.getTeam() == Team.BLACK).toList();
-            threateningFigures = whiteFigures.stream().filter(f -> f.isMoveLegal(f.getPosition(), whiteKing.getPosition(), f, this, true)).toList();
-        }
-        return !threateningFigures.isEmpty();
-    }
-    public boolean isCheck(Team active, boolean isBeforeMove) {
-        List<Figure> threateningFigures;
-        if (active == Team.WHITE) {
-            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("K") && f.getTeam() == Team.WHITE).findFirst().get();
-            List<Figure> whiteFigures = figuresList.stream().filter(f -> f.getTeam() == Team.BLACK).toList();
-            threateningFigures = whiteFigures.stream().filter(f -> f.isMoveLegal(f.getPosition(), whiteKing.getPosition(), f, this, true)).toList();
-        } else {
-            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("K") && f.getTeam() == Team.BLACK).findFirst().get();
-            List<Figure> whiteFigures = figuresList.stream().filter(f -> f.getTeam() == Team.WHITE).toList();
-            threateningFigures = whiteFigures.stream().filter(f -> f.isMoveLegal(f.getPosition(), blackKing.getPosition(), f, this, true)).toList();
-        }
-        return !threateningFigures.isEmpty();
+    public BoardManager copy() {
+        return new BoardManager(
+            this.assets,
+            this.gameFlow,
+            this.fieldsMap,
+            this.figuresList,
+            this.boardUtils,
+            this.selectedFigure,
+            this.capturedFigureId,
+            this.isCapture,
+            this.initialPointerPosition,
+            this.pointerPosition,
+            this.initialFieldPosition,
+            this.finalFieldPosition,
+            this.fieldsSetup,
+            this.figuresSetup);
     }
 
-    public boolean isFigurePlaceable(int screenX, int transformedY) {
+    public List<Figure> isCheck(Team active) {
+        List<Figure> threateningFigures;
+        BoardManager boardManagerCopy = this.copy();
+        if (active == Team.WHITE) {
+            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("K") && f.getTeam() == Team.BLACK).findFirst().get();
+            List<Figure> whiteFigures = figuresList.stream().filter(f -> f.getTeam() == Team.WHITE).toList();
+            threateningFigures = whiteFigures.stream().filter(f -> f.isMoveLegal(f.getPosition(), blackKing.getPosition(), f, boardManagerCopy, true)).toList();
+        } else {
+            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("K") && f.getTeam() == Team.WHITE).findFirst().get();
+            List<Figure> blackFigures = figuresList.stream().filter(f -> f.getTeam() == Team.BLACK).toList();
+            threateningFigures = blackFigures.stream().filter(f -> f.isMoveLegal(f.getPosition(), whiteKing.getPosition(), f, boardManagerCopy, true)).toList();
+        }
+        return threateningFigures;
+    }
+
+    public Optional<Figure> isFigurePlaceable(int screenX, int transformedY) {
         // search for field to drop figure
         String foundSignature = getBoardUtils().findFieldSignatureByScreenCoordinates(screenX, transformedY);
-        // check if field was found
-        if (!Objects.equals(foundSignature, "-1")) {
-            Vector2 fieldCoordinates = findFieldCoordinates(foundSignature);
-            setFinalFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
 
-            Optional<Figure> selectedFigure = getSelectedFigure();
-            Figure figure = selectedFigure.get();
-            if (gameFlow.getActive().equals(figure.getTeam()) &&
-                figure.isMoveLegal(
-                    getInitialFieldPosition(),
-                    getFinalFieldPosition(),
-                    figure,
-                    this,
-                    false
-                )) {
-                // if figure stays at the same position do not count it as a move
-                if ((getInitialFieldPosition().x == getFinalFieldPosition().x
-                    && getInitialFieldPosition().y == getFinalFieldPosition().y)) return false;
-                else {
-                    figure.setMoveCounter(figure.getMoveCounter() + 1);
-                    figure.setPosition(
-                        fieldCoordinates.x,
-                        fieldCoordinates.y
-                    );
-                }
-            } else return false;
+        if (getSelectedFigure() == null) return Optional.empty();
+        Figure figure = getSelectedFigure();
+        // check if field was found
+        if (Objects.equals(foundSignature, "-1")) return Optional.empty();
+
+        Vector2 fieldCoordinates = findFieldCoordinates(foundSignature);
+        setFinalFieldPosition(fieldCoordinates.x, fieldCoordinates.y);
+
+        if (!gameFlow.getActive().equals(figure.getTeam()) ||
+            !figure.isMoveLegal(
+                getInitialFieldPosition(),
+                getFinalFieldPosition(),
+                figure,
+                this,
+                false
+            )) return Optional.empty();
+        // if figure stays at the same position do not count it as a move
+        if ((getInitialFieldPosition().x == getFinalFieldPosition().x
+            && getInitialFieldPosition().y == getFinalFieldPosition().y)) return Optional.empty();
+        figure.setPosition(
+            fieldCoordinates.x,
+            fieldCoordinates.y
+        );
+        if (gameFlow.getActive() == Team.WHITE && gameFlow.isWhiteInCheck()) {
+            List<Figure> threateningFiguresList = isCheck(Team.BLACK);
+            if (threateningFiguresList.isEmpty() ||
+                threateningFiguresList.size() == 1 &&
+                    threateningFiguresList.getFirst().getFigureId().equals(capturedFigureId)) {
+                gameFlow.setWhiteInCheck(false);
+                return Optional.of(figure);
+            }
+            else return Optional.empty();
+        } else if (gameFlow.getActive() == Team.BLACK && gameFlow.isBlackInCheck()) {
+            List<Figure> threateningFiguresList = isCheck(Team.WHITE);
+            if (threateningFiguresList.isEmpty() ||
+                threateningFiguresList.size() == 1 &&
+                    threateningFiguresList.getFirst().getFigureId().equals(capturedFigureId)) {
+                gameFlow.setBlackInCheck(false);
+                return Optional.of(figure);
+            }
+            else return Optional.empty();
+        } else if (gameFlow.getActive() == Team.WHITE) {
+            List<Figure> whiteFiguresList = isCheck(Team.WHITE);
+            List<Figure> blackFiguresList = isCheck(Team.BLACK);
+            if (!whiteFiguresList.isEmpty()) {
+                gameFlow.setBlackInCheck(true);
+                return Optional.of(figure);
+            } else if (!blackFiguresList.isEmpty()) {
+                gameFlow.setWhiteInCheck(true);
+                return Optional.of(figure);
+            }
+        } else if (gameFlow.getActive() == Team.BLACK) {
+            List<Figure> whiteFiguresList = isCheck(Team.WHITE);
+            List<Figure> blackFiguresList = isCheck(Team.BLACK);
+            if (!blackFiguresList.isEmpty()) {
+                gameFlow.setWhiteInCheck(true);
+                return Optional.of(figure);
+            } else if (!whiteFiguresList.isEmpty()) {
+                gameFlow.setBlackInCheck(true);
+                return Optional.of(figure);
+            }
         }
-        return true;
+        return Optional.of(figure);
     }
 
     public void moveFigureOverBoard(int screenX, float transformedY) {
-        Optional<Figure> selectedFigure = getSelectedFigure();
+        Figure selectedFigure = getSelectedFigure();
+        if (selectedFigure == null) return;
         // counting difference between two pointer positions
         Vector2 newTouch = new Vector2(screenX, transformedY);
         Vector2 delta = newTouch.cpy().sub(getPointerPosition());
         // recalculating position
-        selectedFigure.ifPresent(figure -> figure.setPosition(
-            figure.getPosition().x + delta.x / GlobalVariables.BOARD_FIELD_SIDE_LENGTH,
-            figure.getPosition().y + delta.y / GlobalVariables.BOARD_FIELD_SIDE_LENGTH));
+        selectedFigure.setPosition(
+            selectedFigure.getPosition().x + delta.x / GlobalVariables.BOARD_FIELD_SIDE_LENGTH,
+            selectedFigure.getPosition().y + delta.y / GlobalVariables.BOARD_FIELD_SIDE_LENGTH);
         setPointerPosition(newTouch.x, newTouch.y);
     }
 
     public void UndoFigurePlacement() {
         String foundSignature;
-        Optional<Figure> selectedFigure = getSelectedFigure();
+        Figure selectedFigure = getSelectedFigure();
+        if (selectedFigure == null) return;
         // to make figure come back it needs to be set with field coordinates to become normalized and not go outside chessboard
         foundSignature = getBoardUtils().findFieldSignatureByScreenCoordinates((int) getInitialPointerPosition().x, (int) getInitialPointerPosition().y);
         Vector2 fieldCoordinates = findFieldCoordinates(foundSignature);
-        selectedFigure.ifPresent(figure -> figure.setPosition(
+        selectedFigure.setPosition(
             fieldCoordinates.x,
             fieldCoordinates.y
-        ));
+        );
     }
 
     public Vector2 detectFigureOnClick(int screenX, int transformedY) {
@@ -228,10 +306,11 @@ public class BoardManager {
         for (int i = 0; i < figuresList.size(); i++) {
             if (x == figuresList.get(i).getPosition().x &&
                 y == figuresList.get(i).getPosition().y) {
-                selectedFigure = Optional.ofNullable(figuresList.get(i));
+                selectedFigure = figuresList.get(i);
             }
         }
     }
+
     public Optional<Figure> findFigureByCoordinatesAndReturn(float x, float y) {
         // find figure by coordinates
         for (int i = 0; i < figuresList.size(); i++) {
@@ -242,6 +321,7 @@ public class BoardManager {
         }
         return Optional.empty();
     }
+
     public List<Figure> findFigureByCoordinatesAndReturn(float x, float y, boolean isMore) {
         // this method helps isMoveExposingKingToCheck
         // find figure by coordinates
@@ -260,10 +340,10 @@ public class BoardManager {
     }
 
     public void setSelectedFigureAsEmpty() {
-        this.selectedFigure = Optional.empty();
+        this.selectedFigure = null;
     }
 
-    public Optional<Figure> getSelectedFigure() {
+    public Figure getSelectedFigure() {
         return selectedFigure;
     }
 
@@ -293,5 +373,25 @@ public class BoardManager {
 
     public GameFlow getGameFlow() {
         return gameFlow;
+    }
+
+    public String getCapturedFigureId() {
+        return capturedFigureId;
+    }
+
+    public void setCapturedFigureId(String capturedFigureId) {
+        this.capturedFigureId = capturedFigureId;
+    }
+
+    public List<Figure> getFiguresList() {
+        return figuresList;
+    }
+
+    public boolean isCapture() {
+        return isCapture;
+    }
+
+    public void setCapture(boolean capture) {
+        isCapture = capture;
     }
 }

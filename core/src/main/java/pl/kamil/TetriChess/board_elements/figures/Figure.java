@@ -21,13 +21,6 @@ public abstract class Figure {
     protected Integer moveCounter = 0;
     public Integer getMoveCounter() {return moveCounter;}
     public void setMoveCounter(Integer moveCounter) {this.moveCounter = moveCounter;}
-    protected boolean isMoveExposingKingToCheck(BoardManager board, Vector2 initialPosition, Vector2 finalPosition) {
-        // moving away figure and checking whether this made check occurs
-        this.setPosition(finalPosition.x, finalPosition.y);
-        boolean isExposing = board.isCheck(board.getGameFlow().getActive(), true);
-        this.setPosition(initialPosition.x, initialPosition.y);
-        return isExposing;
-    }
     protected boolean isNotBlocked(Vector2 initialPosition, BoardManager board) {
         String fieldSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) initialPosition.x, (int) initialPosition.y);
         Field field = board.getFieldsMap().get(fieldSignature);
@@ -41,9 +34,9 @@ public abstract class Figure {
         if (finalPosition.y != initialPosition.y && finalPosition.x != initialPosition.x) {
             int i = finalPosition.y > initialPosition.y ? 1 : -1;
             int j = finalPosition.x > initialPosition.x ? 1 : -1;
-            //  check initial position for isKingExposed method proper functioning
-            float checkPosY = initialPosition.y + 0;
-            float checkPosX = initialPosition.x + 0;
+            //  check initial position for isKingExposed method proper functioning X
+            float checkPosY = initialPosition.y + i;
+            float checkPosX = initialPosition.x + j;
             // loop needs to check final field once before closing
             while (!isFinalAgain) {
                 // set that we checked final field
@@ -53,6 +46,7 @@ public abstract class Figure {
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
                     List<Figure> foundFigures = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y, true);
+                    // find figures that are not us
                     Optional<Figure> first = foundFigures.stream().filter(f -> !f.getTeam().equals(this.getTeam())).findFirst();
                     if (first.isPresent()) {
                         return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
@@ -73,8 +67,10 @@ public abstract class Figure {
                 String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) initialPosition.x, (int) checkPosY);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-                    Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
-                    if (foundFigure.isPresent()) {
+                    Optional<Figure> foundFigures = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
+                    // find figures that are not us
+                    Optional<Figure> first = foundFigures.stream().filter(f -> !f.getTeam().equals(this.getTeam())).findFirst();
+                    if (first.isPresent()) {
                         return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
                     }
                 }
@@ -91,8 +87,10 @@ public abstract class Figure {
                 String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) initialPosition.y);
                 if (!Objects.equals(foundSignature, "-1")) {
                     Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-                    Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
-                    if (foundFigure.isPresent()) {
+                    Optional<Figure> foundFigures = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
+                    // find figures that are not us
+                    Optional<Figure> first = foundFigures.stream().filter(f -> !f.getTeam().equals(this.getTeam())).findFirst();
+                    if (first.isPresent()) {
                         return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
                     }
                 }
@@ -170,9 +168,4 @@ public abstract class Figure {
         // check is path blocks free
         return new Tuple2<>(new Vector2(finalPosition.x, finalPosition.y), true);
     }
-    protected void beat() {
-
-    }
-
-
 }

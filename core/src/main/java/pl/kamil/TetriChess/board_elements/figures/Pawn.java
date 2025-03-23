@@ -22,7 +22,6 @@ public class Pawn extends Figure {
         this.position.set(positionX, positionY);
         this.team = team;
         this.moveCounter = 0;
-        this.hasBeat = false;
     }
 
     @Override
@@ -32,41 +31,31 @@ public class Pawn extends Figure {
                                BoardManager board,
                                boolean isCheckingExpose
     ) {
-        try {
-            if (!isNotBlocked(initialPosition, board)) return false;
+//        try {
+        if (!isNotBlocked(initialPosition, board)) return false;
 //            if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
-            // transition
-            if (!isTransitionLegal(initialPosition, finalPosition, selectedFigure)) return false;
-            // checking if smth is standing on path
-            if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
+        // transition
+        if (!isTransitionLegal(initialPosition, finalPosition, selectedFigure)) return false;
+        // checking if smth is standing on path
+        if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
 
-            Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
-            Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
-            // check if we found figure but we cant beat if final position is not equal figure position
-            if (!isPathFigureFree._2()) {
-                // check if found figure is same team
-                if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
-                else {
-                    // not letting pawn beat vertically
-                    if (finalPosition.x == initialPosition.x) return false;
-                        // don't let figure beat if it is not last chosen field
-                    else if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
-                    else {
-                        // beating if figure is not king
-                        if (!figure.get().getFigureId().equals("K")) {
-                            board.figuresList.remove(figure.get());
-                            hasBeat = true;
-                            return true;
-                        }
-                    }
-                }
-            }
-            // not letting pawn go diagonally without beating
-            if (!hasBeat && initialPosition.x != isPathFigureFree._1().x) return false;
-        } finally {
-            // switching back hasBeat so it can beat again and transition properly
-            hasBeat = false;
+        Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
+        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
+        // check if we found figure but we cant beat if final position is not equal figure position
+        if (!isPathFigureFree._2()) {
+            // check if found figure is same team
+            if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
+            // not letting pawn beat vertically
+            if (finalPosition.x == initialPosition.x) return false;
+            // don't let figure beat if it is not last chosen field
+            if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y)
+                return false;
+            board.setCapturedFigureId(figure.get().getFigureId());
+            board.setCapture(true);
+            return true;
         }
+        // not letting pawn go diagonally without beating
+        if (!board.isCapture() && initialPosition.x != isPathFigureFree._1().x) return false;
         return true;
     }
 

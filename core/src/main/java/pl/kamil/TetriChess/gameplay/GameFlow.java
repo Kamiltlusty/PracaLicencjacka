@@ -1,32 +1,24 @@
 package pl.kamil.TetriChess.gameplay;
 
-import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
-import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.resources.Assets;
-import pl.kamil.TetriChess.resources.GlobalVariables;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 public class GameFlow {
     private Team active = Team.WHITE;
-    private boolean isCheck = false;
+    private boolean whiteInCheck = false;
+    private boolean blackInCheck = false;
     private boolean isCheckmate = false;
-    private final BoardManager board;
+    private final BoardManager boardManager;
     private final ShapesManager shapesManager;
     private Shape activeShape;
 
 
     public GameFlow(Assets assets) {
         // crate new game/board
-        this.board = new BoardManager(assets, this);
+        this.boardManager = new BoardManager(assets, this);
         this.shapesManager = new ShapesManager(assets);
         shapesManager.generateShapes();
         this.activeShape = null;
@@ -44,8 +36,8 @@ public class GameFlow {
         return shapesManager;
     }
 
-    public BoardManager getBoard() {
-        return board;
+    public BoardManager getBoardManager() {
+        return boardManager;
     }
 
     public Shape getActiveShape() {
@@ -53,16 +45,30 @@ public class GameFlow {
     }
 
     public void prepare() {
+        if (isCheckmate) System.exit(0);
         setActive();
-        board.setAllFieldsFree();
+        boardManager.setCapture(false);
+        boardManager.setCapturedFigureId(null);
+        boardManager.setSelectedFigureAsEmpty();
+        boardManager.setAllFieldsFree();
         activeShape = shapesManager.getShapes().pollFirst();
         shapesManager.generateShapes();
     }
 
-    public void isCheck() {
-        isCheck = board.isCheck(active);
+
+    public boolean isWhiteInCheck() {
+        return whiteInCheck;
     }
 
+    public void setWhiteInCheck(boolean whiteInCheck) {
+        this.whiteInCheck = whiteInCheck;
+    }
 
+    public boolean isBlackInCheck() {
+        return blackInCheck;
+    }
 
+    public void setBlackInCheck(boolean blackInCheck) {
+        this.blackInCheck = blackInCheck;
+    }
 }

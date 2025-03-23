@@ -43,15 +43,12 @@ public class King extends Figure {
         if (!isPathFigureFree._2()) {
             // check if found figure is same team
             if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
-            else {
-                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
-                else {
-                    // beating if figure is not king
-                    if (!figure.get().getFigureId().equals("K")) {
-                        board.figuresList.remove(figure.get());
-                        return true;
-                    }
-                }
+            if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
+            // beating if figure is not king
+            if (!figure.get().getFigureId().equals("K")) {
+                board.setCapturedFigureId(figure.get().getFigureId());
+                board.setCapture(true);
+                return true;
             }
         }
         // castling

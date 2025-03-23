@@ -32,7 +32,7 @@ public class Knigth extends Figure {
                                boolean isCheckingExpose
     ) {
         if (!isNotBlocked(initialPosition, board)) return false;
-        if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
+//        if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
         // transition
         if (!isTransitionLegal(initialPosition, finalPosition)) return false;
         // checking if smth is standing on path
@@ -44,38 +44,29 @@ public class Knigth extends Figure {
         if (!isPathFigureFree._2()) {
             // check if found figure is same team
             if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
-            else {
-                if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
-                else {
-                    // beating if figure is not king
-                    if (!figure.get().getFigureId().equals("K")) {
-                        board.figuresList.remove(figure.get());
-                        return true;
-                    }
-                }
+            if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
+
+            // beating if figure is not king
+            if (!figure.get().getFigureId().equals("K")) {
+                board.setCapturedFigureId(figure.get().getFigureId());
+                board.setCapture(true);
+                return true;
             }
         }
         return true;
     }
 
     boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
-        boolean isLegal = true;
-
         float moveDistanceY = Math.abs(finalPosition.y - initialPosition.y);
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
-        System.out.println("moveDistanceY: " + moveDistanceY);
-        System.out.println("moveDistanceX: " + moveDistanceX);
-        if (moveDistanceY == 1.0 && moveDistanceX == 2.0 ||
+        return (moveDistanceY == 1.0 && moveDistanceX == 2.0 ||
             moveDistanceY == 1.0 && moveDistanceX == -2.0 ||
             moveDistanceY == -1.0 && moveDistanceX == 2.0 ||
             moveDistanceY == -1.0 && moveDistanceX == -2.0 ||
             moveDistanceY == 2.0 && moveDistanceX == 1.0 ||
             moveDistanceY == 2.0 && moveDistanceX == -1.0 ||
             moveDistanceY == -2.0 && moveDistanceX == 1.0 ||
-            moveDistanceY == -2.0 && moveDistanceX == -1.0) {
-        } else isLegal = false;
-
-        return isLegal;
+            moveDistanceY == -2.0 && moveDistanceX == -1.0);
     }
 
     protected Tuple2<Vector2, Boolean> isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
@@ -90,6 +81,7 @@ public class Knigth extends Figure {
         }
         return new Tuple2<>(new Vector2(), true);
     }
+
     protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
         if (!Objects.equals(foundSignature, "-1")) {

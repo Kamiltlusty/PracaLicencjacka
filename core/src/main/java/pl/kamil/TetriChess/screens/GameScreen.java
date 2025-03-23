@@ -9,9 +9,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.drawing.DrawManager;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
+
+import java.util.Optional;
 
 import static pl.kamil.TetriChess.resources.GlobalVariables.MIN_WORLD_HEIGHT;
 import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_WIDTH;
@@ -40,7 +43,7 @@ public class GameScreen implements Screen, InputProcessor {
         );
 
         // create board
-        boardManager = gameFlow.getBoard();
+        boardManager = gameFlow.getBoardManager();
         this.drawManager = new DrawManager(assets, boardManager, batch, gameFlow);
     }
 
@@ -166,18 +169,35 @@ public class GameScreen implements Screen, InputProcessor {
         int transformedY = transformY(screenY);
 
         // if everything is ok puts figure on place else return false
-        boolean allValid = boardManager.isFigurePlaceable(screenX, transformedY);
+        Optional<Figure> figure = boardManager.isFigurePlaceable(screenX, transformedY);
 
-        if (!allValid) {
+        if (figure.isEmpty()) {
             boardManager.UndoFigurePlacement();
-        } else {
-            gameFlow.isCheck();
+            boardManager.setCapture(false);
+            boardManager.setCapturedFigureId(null);
+            boardManager.setSelectedFigureAsEmpty();
+        }
+
+        else {
+            if (boardManager.isCapture()) {
+                removeCapturedFigure();
+            }
+            figure.get().setMoveCounter(figure.get().getMoveCounter() + 1);
+//            gameFlow.isCheck();
             // prepare for next move
             gameFlow.prepare();
         }
-
-        boardManager.setSelectedFigureAsEmpty();
         return false;
+    }
+
+    private void removeCapturedFigure() {
+        Optional<Figure> capturedFigure = boardManager.getFiguresList().stream()
+            .filter(f -> f.getFigureId().equals(boardManager.getCapturedFigureId()))
+            .filter(f -> !f.getTeam().equals(gameFlow.getActive()))
+            .findFirst();
+        if (capturedFigure.isPresent()) {
+            boardManager.getFiguresList().remove(capturedFigure.get());
+        } else throw new RuntimeException("Figure that should be in figuresList was not found");
     }
 
     @Override

@@ -24,39 +24,7 @@ public class Knigth extends Figure {
         this.team = team;
     }
 
-    @Override
-    public boolean isMoveLegal(Vector2 initialPosition,
-                               Vector2 finalPosition,
-                               Figure selectedFigure,
-                               BoardManager board,
-                               boolean isCheckingExpose
-    ) {
-        if (!isNotBlocked(initialPosition, board)) return false;
-//        if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
-        // transition
-        if (!isTransitionLegal(initialPosition, finalPosition)) return false;
-        // checking if smth is standing on path
-        if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
-
-        Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
-        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
-        // check if we found figure
-        if (!isPathFigureFree._2()) {
-            // check if found figure is same team
-            if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
-            if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y) return false;
-
-            // beating if figure is not king
-            if (!figure.get().getFigureId().equals("K")) {
-                board.setCapturedFigureId(figure.get().getFigureId());
-                board.setCapture(true);
-                return true;
-            }
-        }
-        return true;
-    }
-
-    boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition) {
+    public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selctedFigure) {
         float moveDistanceY = Math.abs(finalPosition.y - initialPosition.y);
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
         return (moveDistanceY == 1.0 && moveDistanceX == 2.0 ||
@@ -69,30 +37,27 @@ public class Knigth extends Figure {
             moveDistanceY == -2.0 && moveDistanceX == -1.0);
     }
 
-    protected Tuple2<Vector2, Boolean> isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
+    @Override
+    public boolean isSpecificMoveLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Figure foundFigure, BoardManager boardManager) {
+        return true;
+    }
+
+    public Figure isPathFigureFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
         if (!Objects.equals(foundSignature, "-1")) {
             // checking figure
             Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
             Optional<Figure> foundFigure = board.findFigureByCoordinatesAndReturn(fieldCoordinates.x, fieldCoordinates.y);
             if (foundFigure.isPresent()) {
-                return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
+                return foundFigure.get();
             }
         }
-        return new Tuple2<>(new Vector2(), true);
+        return null;
     }
 
     protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
-        if (!Objects.equals(foundSignature, "-1")) {
-            // checking figure
-            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
-            Field field = board.getFieldsMap().get(foundSignature);
-            if (field.getBlockedState() == Field.BlockedState.BLOCKED) {
-                return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
-            }
-        }
-        return new Tuple2<>(new Vector2(), true);
+        return checkIsFieldBlocked(board, foundSignature);
     }
 
     public String getFigureId() {

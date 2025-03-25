@@ -147,10 +147,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         int transformedY = transformY(screenY);
-
-        Vector2 fieldCoordinates = boardManager.detectFigureOnClick(screenX, transformedY);
-        // saves all pointer position for usage in touchDragged and touchUp
-        boardManager.savePointerPositionInBoardManager(screenX, transformedY, fieldCoordinates);
+        gameFlow.onTouchDown(screenX, transformedY);
         return false;
     }
 
@@ -158,8 +155,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         float transformedY = transformY(screenY, true);
-
-        boardManager.moveFigureOverBoard(screenX, transformedY);
+        gameFlow.onTouchDragged(screenX, transformedY);
         return false;
     }
 
@@ -167,38 +163,10 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         int transformedY = transformY(screenY);
-
-        // if everything is ok puts figure on place else return false
-        Optional<Figure> figure = boardManager.isFigurePlaceable(screenX, transformedY);
-
-        if (figure.isEmpty()) {
-            boardManager.UndoFigurePlacement();
-            boardManager.setCapture(false);
-            boardManager.setCapturedFigureId(null);
-            boardManager.setSelectedFigureAsEmpty();
-        }
-
-        else {
-            if (boardManager.isCapture()) {
-                removeCapturedFigure();
-            }
-            figure.get().setMoveCounter(figure.get().getMoveCounter() + 1);
-//            gameFlow.isCheck();
-            // prepare for next move
-            gameFlow.prepare();
-        }
+        gameFlow.onTouchUp(screenX, transformedY);
         return false;
     }
 
-    private void removeCapturedFigure() {
-        Optional<Figure> capturedFigure = boardManager.getFiguresList().stream()
-            .filter(f -> f.getFigureId().equals(boardManager.getCapturedFigureId()))
-            .filter(f -> !f.getTeam().equals(gameFlow.getActive()))
-            .findFirst();
-        if (capturedFigure.isPresent()) {
-            boardManager.getFiguresList().remove(capturedFigure.get());
-        } else throw new RuntimeException("Figure that should be in figuresList was not found");
-    }
 
     @Override
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {

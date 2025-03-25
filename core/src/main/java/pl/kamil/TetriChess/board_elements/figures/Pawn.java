@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import io.vavr.Tuple2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
+import pl.kamil.TetriChess.gameplay.StateRecord;
 
 import java.util.Optional;
 
@@ -25,41 +26,16 @@ public class Pawn extends Figure {
     }
 
     @Override
-    public boolean isMoveLegal(Vector2 initialPosition,
-                               Vector2 finalPosition,
-                               Figure selectedFigure,
-                               BoardManager board,
-                               boolean isCheckingExpose
-    ) {
-//        try {
-        if (!isNotBlocked(initialPosition, board)) return false;
-//            if (!isCheckingExpose && isMoveExposingKingToCheck(board, initialPosition, finalPosition)) return false;
-        // transition
-        if (!isTransitionLegal(initialPosition, finalPosition, selectedFigure)) return false;
-        // checking if smth is standing on path
-        if (!(selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, board))._2) return false;
-
-        Tuple2<Vector2, Boolean> isPathFigureFree = selectedFigure.isPathFigureFree(initialPosition, finalPosition, this, board);
-        Optional<Figure> figure = board.findFigureByCoordinatesAndReturn(isPathFigureFree._1().x, isPathFigureFree._1().y);
-        // check if we found figure but we cant beat if final position is not equal figure position
-        if (!isPathFigureFree._2()) {
-            // check if found figure is same team
-            if (figure.isEmpty() || figure.get().getTeam().equals(selectedFigure.getTeam())) return false;
-            // not letting pawn beat vertically
-            if (finalPosition.x == initialPosition.x) return false;
-            // don't let figure beat if it is not last chosen field
-            if (finalPosition.x != isPathFigureFree._1().x || finalPosition.y != isPathFigureFree._1().y)
-                return false;
-            board.setCapturedFigureId(figure.get().getFigureId());
-            board.setCapture(true);
-            return true;
-        }
-        // not letting pawn go diagonally without beating
-        if (!board.isCapture() && initialPosition.x != isPathFigureFree._1().x) return false;
-        return true;
+    public boolean isSpecificMoveLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Figure foundFigure, BoardManager boardManager) {
+        // check whether pawn does not move diagonally
+        if (initialPosition.x == finalPosition.x) return true;
+        // don't let pawn move diagonally without beating
+        if (foundFigure == null) return false;
+        // check whether figure to capture is opposite team
+        return !foundFigure.getTeam().equals(selectedFigure.getTeam());
     }
 
-    boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {
+    public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {
         boolean isLegal = true;
         float moveDistanceY = finalPosition.y - initialPosition.y;
         float moveDistanceX = Math.abs(finalPosition.x - initialPosition.x);
@@ -77,6 +53,21 @@ public class Pawn extends Figure {
         return isLegal;
     }
 
+    public boolean isBeatingLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Figure foundFigure, BoardManager boardManager, StateRecord record) {
+        // check if we found figure but we cant beat if final position is not equal figure position
+        // check if found figure is same team
+        if (foundFigure.getTeam().equals(selectedFigure.getTeam())) return false;
+        // not letting pawn beat vertically
+        if (finalPosition.x == initialPosition.x) return false;
+        // don't let figure beat if it is not last chosen field
+        if (finalPosition.x != foundFigure.getPosition().x || finalPosition.y != foundFigure.getPosition().y)
+            return false;
+        boardManager.setCapturedFigureId(foundFigure.getFigureId());
+        boardManager.setCapture(true);
+        record.setCapturedFigureId(foundFigure.getFigureId());
+        record.setCapture(true);
+        return true;
+    }
 
     public String getFigureId() {
         return figureId;

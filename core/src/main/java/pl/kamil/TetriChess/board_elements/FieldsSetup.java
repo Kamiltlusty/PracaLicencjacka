@@ -115,7 +115,6 @@ public class FieldsSetup {
                                 black_field_texture.getHeight()));
                     }
                 }
-
             }
         }
     }

@@ -6,6 +6,8 @@ import io.vavr.Tuple2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class Rook extends Figure {
@@ -13,7 +15,6 @@ public class Rook extends Figure {
     private final Texture figureTexture;
     private final Vector2 position = new Vector2();
     private final Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private boolean hasMoved;
     private static final int value = 1;
 
     public Rook(String rookId, Texture rookTexture, float positionX, float positionY, Team team) {
@@ -21,7 +22,6 @@ public class Rook extends Figure {
         this.figureTexture = rookTexture;
         this.position.set(positionX, positionY);
         this.team = team;
-        this.hasMoved = false;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {
@@ -49,12 +49,35 @@ public class Rook extends Figure {
         return true;
     }
 
-    public void setHasMoved(boolean hasMoved) {
-        this.hasMoved = hasMoved;
-    }
-
-    public boolean getHasMoved() {
-        return hasMoved;
+    @Override
+    public List<Vector2> writeDownPossibleMoves() {
+        List<Vector2> possibleMoves = new ArrayList<>();
+        // check possible moves in every direction right down left up
+        // to right
+        Vector2 initialPosition = new Vector2(position.x + 1, position.y);
+        while (initialPosition.x < 8) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x + 1, initialPosition.y);
+        }
+        // to down
+        initialPosition = new Vector2(position.x, position.y - 1);
+        while (initialPosition.y >= 0) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x, initialPosition.y - 1);
+        }
+        // to left
+        initialPosition = new Vector2(position.x - 1, position.y);
+        while (initialPosition.x >= 0) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x - 1, initialPosition.y);
+        }
+        // to up
+        initialPosition = new Vector2(position.x, position.y + 1);
+        while (initialPosition.y < 8) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x, initialPosition.y + 1);
+        }
+        return possibleMoves;
     }
 
     @Override

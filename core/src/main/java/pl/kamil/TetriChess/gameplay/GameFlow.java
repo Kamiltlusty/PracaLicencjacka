@@ -2,20 +2,24 @@ package pl.kamil.TetriChess.gameplay;
 
 import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.BoardUtils;
 import pl.kamil.TetriChess.board_elements.CheckType;
 import pl.kamil.TetriChess.board_elements.Team;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
+import pl.kamil.TetriChess.board_elements.figures.Queen;
+import pl.kamil.TetriChess.board_elements.figures.Rook;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameFlow {
     private final BoardManager boardManager;
     private final ShapesManager shapesManager;
+    private final BoardUtils boardUtils;
+    private final Assets assets;
     private Shape activeShape;
 
     private Team active = Team.WHITE;
@@ -23,17 +27,18 @@ public class GameFlow {
     private boolean whiteInCheck = false;
     private boolean blackInCheck = false;
     private boolean isCheckmate = false;
-
     private boolean touchDownOccurred;
     private boolean touchDraggedOccurred;
     private boolean touchUpOccurred;
-    private final Deque<StateRecord> stateRecordDeque = new ArrayDeque<>();
+    private final Deque<StateBeforeMoveRecord> stateBeforeMoveRecordDeque = new ArrayDeque<>();
 
 
     public GameFlow(Assets assets) {
         // crate new game/board
         this.boardManager = new BoardManager(assets, this);
         this.shapesManager = new ShapesManager(assets);
+        this.boardUtils = boardManager.getBoardUtils();
+        this.assets = assets;
 
         // generate shapes
         shapesManager.generateShapes();
@@ -58,54 +63,145 @@ public class GameFlow {
 
     public void onTouchUp(int screenX, int transformedY) {
         this.touchUpOccurred = true;
-        StateRecord record = new StateRecord(
-            getActive(),
-            isWhiteInCheck(),
-            isBlackInCheck(),
-            isCheckmate()
-        );
-        stateRecordDeque.addFirst(record);
+        StateBeforeMoveRecord beforeMoveRecord;
+        // when I don't have check I have to set beforeMoveRecord at first but when check occurs I have to set it before next move
+        if (checkType.equals(CheckType.NONE)) {
+            beforeMoveRecord = new StateBeforeMoveRecord(
+                getActive(),
+                isWhiteInCheck(),
+                isBlackInCheck(),
+                isCheckmate(),
+                boardManager,
+                boardUtils);
+
+            stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
+        } else beforeMoveRecord = stateBeforeMoveRecordDeque.getFirst();
 
         // check if move is legal on copy of game board
-        boolean isValid = boardManager.validateMove(screenX, transformedY, record);
+        boolean isValid = boardManager.validateMove(screenX, transformedY, beforeMoveRecord, false);
         // if move turned out to be legal execute it
         if (isValid) {
-            if (boardManager.isCapture()) {
-                removeCapturedFigure();
-            }
-            boardManager.getSelectedFigure().setPosition(
-                boardManager.getFinalFieldPosition().x,
-                boardManager.getFinalFieldPosition().y
-            );
-            boardManager.getSelectedFigure().setMoveCounter(boardManager.getSelectedFigure().getMoveCounter() + 1);
+            executeMove();
             this.prepare();
+
+            // check checkmate if is check
+            // when check occurs I have to set beforeMoveRecord before next move for checking checkmate
+            if (!checkType.equals(CheckType.NONE)) {
+                beforeMoveRecord = new StateBeforeMoveRecord(
+                    getActive(),
+                    isWhiteInCheck(),
+                    isBlackInCheck(),
+                    isCheckmate(),
+                    boardManager,
+                    boardUtils);
+                stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
+                checkCheckmate(beforeMoveRecord);
+            }
         } else {
             boardManager.UndoFigurePlacement();
+            stateBeforeMoveRecordDeque.removeFirst();
+            boardManager.setCastling(false);
             boardManager.setCapture(false);
+            boardManager.setPromotion(false);
             boardManager.setCapturedFigureId(null);
+            boardManager.setPromotedFigureId(null);
             boardManager.setSelectedFigureAsEmpty();
         }
-        // prepare for next move by setting fields to initial state
 
         // if everything is ok puts figure on place else return false
-
-//        if (!isValid) {
-//            boardManager.UndoFigurePlacement();
-//            boardManager.setCapture(false);
-//            boardManager.setCapturedFigureId(null);
-//            boardManager.setSelectedFigureAsEmpty();
-//        } else {
-//            if (boardManager.isCapture()) {
-//                removeCapturedFigure();
-//            }
-//            figure.get().setMoveCounter(figure.get().getMoveCounter() + 1);
-//            gameFlow.isCheck();
-//            // prepare for next move
-//            this.prepare();
-//        }
         touchDownOccurred = false;
         touchDraggedOccurred = false;
         touchUpOccurred = false;
+    }
+
+    private void checkCheckmate(StateBeforeMoveRecord beforeMoveRecord) {
+//         check if there is legal move on figures owned by active player
+        Map<Figure, List<Vector2>> figuresWithPossibleMoves = boardManager.figuresList.stream()
+            .filter(f -> f.getTeam().equals(active))
+            .collect(Collectors.toMap(
+                f -> f,
+                Figure::writeDownPossibleMoves
+            ));
+        boolean foundValidMove = false;
+        for (Map.Entry<Figure, List<Vector2>> figureListEntry : figuresWithPossibleMoves.entrySet()) {
+            boardManager.setSelectedFigure(figureListEntry.getKey());
+            boolean b = false;
+            for (Vector2 move : figureListEntry.getValue()) {
+                if (boardManager.validateMove((int) move.x, (int) move.y, beforeMoveRecord, true)) {
+                    b = true;
+                    break;
+                }
+            }
+            if (b) {
+                foundValidMove = true;
+                break;
+            }
+        }
+
+        if (!foundValidMove) {
+            throw new RuntimeException("Checkmate!!!");
+        }
+    }
+
+    private void executeMove() {
+        if (boardManager.isCapture()) {
+            removeCapturedFigure();
+        }
+
+        if (boardManager.isCastling()) {
+            // need to check it again to find proper rook but do not need to check whether king is moving exactly 2 fields
+            if (boardManager.getFinalFieldPosition().x == 6.0 && boardManager.getFinalFieldPosition().y == 0.0) {
+                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(7, 0);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(5.0f, 0.0f);
+            } else if (boardManager.getFinalFieldPosition().x == 2.0 && boardManager.getFinalFieldPosition().y == 0.0) {
+                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(0, 0);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(3.0f, 0.0f);
+            } else if (boardManager.getFinalFieldPosition().x == 6.0 && boardManager.getFinalFieldPosition().y == 7.0) {
+                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(7, 7);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(5.0f, 7.0f);
+            } else if (boardManager.getFinalFieldPosition().x == 2.0 && boardManager.getFinalFieldPosition().y == 7.0) {
+                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(0, 7);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(3.0f, 7.0f);
+            }
+        }
+
+        if (boardManager.isPromotion()) {
+            Vector2 pawnPositionBeforePromotion = boardManager.getSelectedFigure().getPosition();
+            // check amount of promoted pawns in one team and increase number by 1 to make index for new figure
+            boardManager.figuresList.remove(boardManager.getSelectedFigure());
+            boardManager.promotedPawns.add(boardManager.getSelectedFigure());
+            long newFigureIdNumber = boardManager.promotedPawns.stream()
+                .filter(f -> f.getTeam().equals(active))
+                .count();
+            Figure promotedQueen;
+            if (active == Team.BLACK) {
+                String figureId = "QB" + newFigureIdNumber;
+                promotedQueen = new Queen(figureId,
+                    assets.manager.get(Assets.QUEEN_TEXTURE_BLACK),
+                    pawnPositionBeforePromotion.x,
+                    pawnPositionBeforePromotion.y,
+                    active);
+            } else {
+                String figureId = "QW" + newFigureIdNumber;
+                promotedQueen = new Queen(figureId,
+                    assets.manager.get(Assets.QUEEN_TEXTURE_WHITE),
+                    pawnPositionBeforePromotion.x,
+                    pawnPositionBeforePromotion.y,
+                    active);
+            }
+            // increase move counter before selected figure becomes new figure (promoted)
+            boardManager.getSelectedFigure().setMoveCounter(boardManager.getSelectedFigure().getMoveCounter() + 1);
+            boardManager.getFiguresList().add(promotedQueen);
+            boardManager.setSelectedFigure(promotedQueen);
+        } else {
+            // increase move counter for selected figure
+            boardManager.getSelectedFigure().setMoveCounter(boardManager.getSelectedFigure().getMoveCounter() + 1);
+        }
+
+        boardManager.getSelectedFigure().setPosition(
+            boardManager.getFinalFieldPosition().x,
+            boardManager.getFinalFieldPosition().y
+        );
     }
 
     private void removeCapturedFigure() {
@@ -114,6 +210,7 @@ public class GameFlow {
             .filter(f -> !f.getTeam().equals(this.getActive()))
             .findFirst();
         if (capturedFigure.isPresent()) {
+            boardManager.capturedFigures.add(capturedFigure.get());
             boardManager.getFiguresList().remove(capturedFigure.get());
         } else throw new RuntimeException("Figure that should be in figuresList was not found");
     }
@@ -147,8 +244,11 @@ public class GameFlow {
     public void prepare() {
         if (isCheckmate) System.exit(0);
         setActive();
+        boardManager.setCastling(false);
         boardManager.setCapture(false);
+        boardManager.setPromotion(false);
         boardManager.setCapturedFigureId(null);
+        boardManager.setPromotedFigureId(null);
         boardManager.setSelectedFigureAsEmpty();
         boardManager.setAllFieldsFree();
         activeShape = shapesManager.getShapes().pollFirst();
@@ -211,4 +311,5 @@ public class GameFlow {
     public void setCheckType(CheckType checkType) {
         this.checkType = checkType;
     }
+
 }

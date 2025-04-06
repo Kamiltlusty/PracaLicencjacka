@@ -1,6 +1,7 @@
 package pl.kamil.TetriChess.board_elements;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.resources.GlobalVariables;
 
@@ -174,4 +175,26 @@ public class BoardUtils {
             return new StringBuilder().append(letter).append(idNum).toString();
         } else return "-1";
     }
+
+    public Vector2 findPositionByFieldSignature(String signature) {
+        char letter = signature.charAt(0);
+        int posY = signature.charAt(1) - 1 - 48; // 48 = 0 ASCII
+        int posX = changeLetterToPositionX(letter);
+        return new Vector2(posX, posY);
+    }
+
+    public int changeLetterToPositionX(char letter) {
+        return switch (letter) {
+            case 'a' -> 0;
+            case 'b' -> 1;
+            case 'c' -> 2;
+            case 'd' -> 3;
+            case 'e' -> 4;
+            case 'f' -> 5;
+            case 'g' -> 6;
+            case 'h' -> 7;
+            default -> throw new IllegalStateException("Unexpected value: " + letter);
+        };
+    }
+
 }

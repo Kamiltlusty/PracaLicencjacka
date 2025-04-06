@@ -5,6 +5,9 @@ import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Queen extends Figure {
     private final String figureId;
     private final Texture figureTexture;
@@ -30,6 +33,61 @@ public class Queen extends Figure {
     @Override
     public boolean isSpecificMoveLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Figure foundFigure, BoardManager boardManager) {
         return true;
+    }
+
+    @Override
+    public List<Vector2> writeDownPossibleMoves() {
+        List<Vector2> possibleMoves = new ArrayList<>();
+        // check possible moves in every direction right down left up
+        // to right
+        Vector2 initialPosition = new Vector2(position.x + 1, position.y);
+        while (initialPosition.x < 8) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x + 1, initialPosition.y);
+        }
+        // to down
+        initialPosition = new Vector2(position.x, position.y - 1);
+        while (initialPosition.y >= 0) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x, initialPosition.y - 1);
+        }
+        // to left
+        initialPosition = new Vector2(position.x - 1, position.y);
+        while (initialPosition.x >= 0) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x - 1, initialPosition.y);
+        }
+        // to up
+        initialPosition = new Vector2(position.x, position.y + 1);
+        while (initialPosition.y < 8) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x, initialPosition.y + 1);
+        }
+        // diagonally right up
+        initialPosition = new Vector2(position.x + 1, position.y + 1);
+        while (initialPosition.y < 8 && initialPosition.x < 8) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x + 1, initialPosition.y + 1);
+        }
+        // diagonally right down
+        initialPosition = new Vector2(position.x + 1, position.y - 1);
+        while (initialPosition.y >= 0 && initialPosition.x < 8) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x + 1, initialPosition.y - 1);
+        }
+        // diagonally left down
+        initialPosition = new Vector2(position.x - 1, position.y - 1);
+        while (initialPosition.y >= 0 && initialPosition.x >= 0) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x - 1, initialPosition.y - 1);
+        }
+        // diagonally left up
+        initialPosition = new Vector2(position.x - 1, position.y + 1);
+        while (initialPosition.y < 8 && initialPosition.x >= 0) {
+            possibleMoves.add(initialPosition);
+            initialPosition = new Vector2(initialPosition.x - 1, initialPosition.y + 1);
+        }
+        return possibleMoves;
     }
 
     public String getFigureId() {

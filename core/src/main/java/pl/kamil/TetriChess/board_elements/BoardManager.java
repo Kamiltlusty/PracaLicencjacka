@@ -129,15 +129,19 @@ public class BoardManager {
         figuresSetup.setPlayerQueen();
     }
 
-
     public boolean validateMove(int screenX, int transformedY, StateBeforeMoveRecord beforeMoveRecord, boolean isCheckingCheckmate) {
         // find figure
         // if isCheckingCheckmate is false screenX/transformedY are in range 0-screen(Width/Height)
         String foundSignature;
         if (!isCheckingCheckmate)
             foundSignature = getBoardUtils().findFieldSignatureByScreenCoordinates(screenX, transformedY);
-        else foundSignature = getBoardUtils().findFieldSignatureByCoordinates(screenX, transformedY);
-        //
+        else {
+            foundSignature = getBoardUtils().findFieldSignatureByCoordinates(screenX, transformedY);
+
+            setInitialFieldPosition(
+                selectedFigure.getPosition().x,
+                selectedFigure.getPosition().y);
+        }
         if (getSelectedFigure() == null) return false;
         Figure figure = getSelectedFigure();
         // check if field was found
@@ -279,8 +283,8 @@ public class BoardManager {
     private void undoSimulation(StateBeforeMoveRecord beforeMoveRecord) {
         // restore position (before simulation)
         selectedFigure.setPosition(
-            initialPointerPosition.x,
-            initialPointerPosition.y
+            initialFieldPosition.x,
+            initialFieldPosition.y
         );
         if (isCapture) {
             // find captured figure in captured figures list

@@ -15,10 +15,6 @@ import java.util.Optional;
 public abstract class Figure {
     public abstract Vector2 getPosition();
 
-    public Vector2 convertPosToInt(Vector2 positionFloat) {
-        return new Vector2((int) positionFloat.x, (int) positionFloat.y);
-    }
-
     public abstract String getFigureId();
 
     public abstract Team getTeam();
@@ -59,7 +55,8 @@ public abstract class Figure {
         if (foundFigure.getTeam().equals(selectedFigure.getTeam())) return false;
 
         // don't let figure beat if it is not last chosen field
-        if (finalPosition.x != foundFigure.getPosition().x || finalPosition.y != foundFigure.getPosition().y)
+        if (finalPosition.x != foundFigure.getPosition().x
+            || finalPosition.y != foundFigure.getPosition().y)
             return false;
         boardManager.setCapturedFigureId(foundFigure.getFigureId());
         boardManager.setCapture(true);

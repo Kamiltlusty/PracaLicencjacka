@@ -111,7 +111,8 @@ public class Pawn extends Figure {
         // not letting pawn beat vertically
         if (finalPosition.x == initialPosition.x) return false;
         // don't let figure beat if it is not last chosen field
-        if (finalPosition.x != foundFigure.getPosition().x || finalPosition.y != foundFigure.getPosition().y)
+        if (finalPosition.x != foundFigure.getPosition().x ||
+            finalPosition.y != foundFigure.getPosition().y)
             return false;
         boardManager.setCapturedFigureId(foundFigure.getFigureId());
         boardManager.setCapture(true);

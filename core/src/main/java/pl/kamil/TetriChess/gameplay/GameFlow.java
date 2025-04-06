@@ -96,6 +96,14 @@ public class GameFlow {
                     boardUtils);
                 stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
                 checkCheckmate(beforeMoveRecord);
+                // as checkingCheckmate can change some fields i have to reset them again
+                boardManager.setCastling(false);
+                boardManager.setCapture(false);
+                boardManager.setPromotion(false);
+                boardManager.setCapturedFigureId(null);
+                boardManager.setPromotedFigureId(null);
+                boardManager.setSelectedFigureAsEmpty();
+//                boardManager.setAllFieldsFree();
             }
         } else {
             boardManager.UndoFigurePlacement();
@@ -127,6 +135,11 @@ public class GameFlow {
             boardManager.setSelectedFigure(figureListEntry.getKey());
             boolean b = false;
             for (Vector2 move : figureListEntry.getValue()) {
+                boardManager.setCastling(false);
+                boardManager.setCapture(false);
+                boardManager.setPromotion(false);
+                boardManager.setCapturedFigureId(null);
+                boardManager.setPromotedFigureId(null);
                 if (boardManager.validateMove((int) move.x, (int) move.y, beforeMoveRecord, true)) {
                     b = true;
                     break;
@@ -166,7 +179,7 @@ public class GameFlow {
         }
 
         if (boardManager.isPromotion()) {
-            Vector2 pawnPositionBeforePromotion = boardManager.getSelectedFigure().getPosition();
+            Vector2 pawnPositionBeforePromotion = getBoardManager().getSelectedFigure().getPosition();
             // check amount of promoted pawns in one team and increase number by 1 to make index for new figure
             boardManager.figuresList.remove(boardManager.getSelectedFigure());
             boardManager.promotedPawns.add(boardManager.getSelectedFigure());

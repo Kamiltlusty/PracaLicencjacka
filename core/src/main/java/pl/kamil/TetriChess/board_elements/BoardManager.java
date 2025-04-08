@@ -7,8 +7,12 @@ import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.gameplay.StateBeforeMoveRecord;
 import pl.kamil.TetriChess.resources.Assets;
 import pl.kamil.TetriChess.resources.GlobalVariables;
+import pl.kamil.TetriChess.side_panel.Shape;
+import pl.kamil.TetriChess.side_panel.Square1x1;
 
 import java.util.*;
+
+import static pl.kamil.TetriChess.resources.GlobalVariables.SQUARE_1X1_SIDE;
 
 public class BoardManager {
     private final Map<String, Field> fieldsMap;
@@ -180,7 +184,8 @@ public class BoardManager {
                 selectedFigure,
                 foundFigure,
                 this,
-                beforeMoveRecord
+                beforeMoveRecord,
+                false
             )) return false;
         }
 
@@ -245,7 +250,7 @@ public class BoardManager {
         else return false;
     }
 
-    public List<Figure> isExposingCheck(Team active) {
+    public List<Figure> isExposingCheck(Team active, StateBeforeMoveRecord beforeMoveRecord) {
         List<Figure> threateningFigures;
         if (active == Team.WHITE) {
             Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
@@ -255,6 +260,7 @@ public class BoardManager {
                 .filter(f -> f.isPathFigureFree(f.getPosition(), whiteKing.getPosition(), f, this)
                     .map(fig -> fig.getFigureId().equals("KW"))
                     .orElse(false))
+                .filter(f -> f.isBeatingLegal(f.getPosition(), whiteKing.getPosition(), f, whiteKing, this, beforeMoveRecord, true))
                 .toList();
         } else {
             Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
@@ -264,6 +270,7 @@ public class BoardManager {
                 .filter(f -> f.isPathFigureFree(f.getPosition(), blackKing.getPosition(), f, this)
                     .map(fig -> fig.getFigureId().equals("KB"))
                     .orElse(false))
+                .filter(f -> f.isBeatingLegal(f.getPosition(), blackKing.getPosition(), f, blackKing, this, beforeMoveRecord, true))
                 .toList();
         }
         return threateningFigures;
@@ -272,7 +279,7 @@ public class BoardManager {
     private boolean isMoveCancelingCheck(StateBeforeMoveRecord beforeMoveRecord) {
         boolean isCancelling = false;
         simulateMove();
-        if (isCancellingCheck().isEmpty()) {
+        if (isCancellingCheck(beforeMoveRecord).isEmpty()) {
             isCancelling = true;
         }
         undoSimulation(beforeMoveRecord);
@@ -320,6 +327,26 @@ public class BoardManager {
             figuresList.add(promotedFigureFromRecord.get());
             selectedFigure = promotedFigureFromRecord.get();
         }
+        // get shape back
+        gameFlow.setActiveShape(beforeMoveRecord.getActiveShape());
+        setAllFieldsFree();
+        // to make fields blocked
+        Shape activeShape = gameFlow.getActiveShape();
+        if (activeShape != null) {
+            Character letter = activeShape.getLetter();
+            Integer number = activeShape.getNumber();
+            String fieldSignature = letter + String.valueOf(number);
+            // to make fields blocked
+            Field field = getFieldsMap().get(fieldSignature);
+            List<Square1x1> list = activeShape.getSquare3x3().getSquares().values().stream().filter(v -> v.getTexture() != null).toList();
+            for (var el : list) {
+                String signature = boardUtils.findFieldSignature(
+                    (int) (field.getPosition().y + el.getRectangle().y/SQUARE_1X1_SIDE),
+                    (int) (field.getPosition().x + el.getRectangle().x/SQUARE_1X1_SIDE));
+                Field fieldToBlock = getFieldsMap().get(signature);
+                fieldToBlock.setBlockedState(Field.BlockedState.BLOCKED);
+            }
+        }
     }
 
     private void simulateMove() {
@@ -364,9 +391,29 @@ public class BoardManager {
                 figuresList.remove(figureToCapture.get());
             } else throw new RuntimeException("Can't find captured figure");
         }
+        // simulate next shape
+        gameFlow.setActiveShape(gameFlow.getShapesManager().getShapes().getFirst());
+        setAllFieldsFree();
+        // to make fields blocked
+        Shape activeShape = gameFlow.getActiveShape();
+        if (activeShape != null) {
+            Character letter = activeShape.getLetter();
+            Integer number = activeShape.getNumber();
+            String fieldSignature = letter + String.valueOf(number);
+            // to make fields blocked
+            Field field = getFieldsMap().get(fieldSignature);
+            List<Square1x1> list = activeShape.getSquare3x3().getSquares().values().stream().filter(v -> v.getTexture() != null).toList();
+            for (var el : list) {
+                String signature = boardUtils.findFieldSignature(
+                    (int) (field.getPosition().y + el.getRectangle().y/SQUARE_1X1_SIDE),
+                    (int) (field.getPosition().x + el.getRectangle().x/SQUARE_1X1_SIDE));
+                Field fieldToBlock = getFieldsMap().get(signature);
+                fieldToBlock.setBlockedState(Field.BlockedState.BLOCKED);
+            }
+        }
     }
 
-    private List<Figure> isCancellingCheck() {
+    private List<Figure> isCancellingCheck(StateBeforeMoveRecord beforeMoveRecord) {
         List<Figure> threateningFigures;
         if (gameFlow.getActive() == Team.WHITE) {
             Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW") && f.getTeam() == Team.WHITE).findFirst().get();
@@ -376,6 +423,7 @@ public class BoardManager {
                 .filter(f -> f.isPathFigureFree(f.getPosition(), whiteKing.getPosition(), f, this)
                     .map(fig -> fig.getFigureId().equals("KW"))
                     .orElse(false))
+                .filter(f -> f.isBeatingLegal(f.getPosition(), whiteKing.getPosition(), f, whiteKing, this, beforeMoveRecord, true))
                 .toList();
         } else {
             Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB") && f.getTeam() == Team.BLACK).findFirst().get();
@@ -385,6 +433,7 @@ public class BoardManager {
                 .filter(f -> f.isPathFigureFree(f.getPosition(), blackKing.getPosition(), f, this)
                     .map(fig -> fig.getFigureId().equals("KB"))
                     .orElse(false))
+                .filter(f -> f.isBeatingLegal(f.getPosition(), blackKing.getPosition(), f, blackKing, this, beforeMoveRecord, true))
                 .toList();
         }
         return threateningFigures;
@@ -402,6 +451,7 @@ public class BoardManager {
                 .filter(f -> f.isPathFigureFree(f.getPosition(), blackKing.getPosition(), f, this)
                     .map(fig -> fig.getFigureId().equals("KB"))
                     .orElse(false))
+                .filter(f -> f.isBeatingLegal(f.getPosition(), blackKing.getPosition(), f, blackKing, this, beforeMoveRecord, true))
                 .toList();
         } else {
             Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW") && f.getTeam() == Team.WHITE).findFirst().get();
@@ -412,6 +462,7 @@ public class BoardManager {
                 .filter(f -> f.isPathFigureFree(f.getPosition(), whiteKing.getPosition(), f, this)
                     .map(fig -> fig.getFigureId().equals("KW"))
                     .orElse(false))
+                .filter(f -> f.isBeatingLegal(f.getPosition(), whiteKing.getPosition(), f, whiteKing, this, beforeMoveRecord, true))
                 .toList();
         }
         undoSimulation(beforeMoveRecord);
@@ -476,7 +527,7 @@ public class BoardManager {
         selectedFigure, BoardManager boardManager, StateBeforeMoveRecord beforeMoveRecord) {
         boolean isExposing = false;
         simulateMove();
-        if (!isExposingCheck(gameFlow.getActive()).isEmpty()) {
+        if (!isExposingCheck(gameFlow.getActive(), beforeMoveRecord).isEmpty()) {
             isExposing = true;
         }
         undoSimulation(beforeMoveRecord);
@@ -486,14 +537,14 @@ public class BoardManager {
     public void moveFigureOverBoard(int screenX, float transformedY) {
         Figure selectedFigure = getSelectedFigure();
         if (selectedFigure == null) return;
-        // counting difference between two pointer positions
-        Vector2 newTouch = new Vector2(screenX, transformedY);
-        Vector2 delta = newTouch.cpy().sub(getPointerPosition());
-        // recalculating position
-        selectedFigure.setPosition(
-            selectedFigure.getPosition().x + delta.x / GlobalVariables.BOARD_FIELD_SIDE_LENGTH,
-            selectedFigure.getPosition().y + delta.y / GlobalVariables.BOARD_FIELD_SIDE_LENGTH);
-        setPointerPosition(newTouch.x, newTouch.y);
+
+        Vector2 currentTouch = new Vector2(screenX, transformedY);
+        Vector2 delta = currentTouch.cpy().sub(getInitialPointerPosition());
+
+        float newX = getInitialFieldPosition().x + delta.x / GlobalVariables.BOARD_FIELD_SIDE_LENGTH;
+        float newY = getInitialFieldPosition().y + delta.y / GlobalVariables.BOARD_FIELD_SIDE_LENGTH;
+
+        selectedFigure.setPosition(newX, newY);
     }
 
     public void UndoFigurePlacement() {

@@ -24,6 +24,7 @@ public abstract class Figure {
     public abstract Vector2 setPosition(float x, float y);
 
     public abstract boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure);
+
     public abstract boolean isSpecificMoveLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Figure foundFigure, BoardManager boardManager);
 
     protected Integer moveCounter = 0;
@@ -49,17 +50,34 @@ public abstract class Figure {
         return (selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, boardManager))._2;
     }
 
-    public boolean isBeatingLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, Figure foundFigure, BoardManager boardManager, StateBeforeMoveRecord record) {
+    public boolean isBeatingLegal(
+        Vector2 initialPosition,
+        Vector2 finalPosition,
+        Figure selectedFigure,
+        Figure foundFigure,
+        BoardManager boardManager,
+        StateBeforeMoveRecord record,
+        boolean simulateWithoutBeating) {
         // check if we found figure but we cant beat if final position is not equal figure position
         // check if found figure is same team
         if (foundFigure.getTeam().equals(selectedFigure.getTeam())) return false;
+        // if figure is pawn and is moving straight then beating is not legal
+        if (selectedFigure.getFigureId().charAt(0) == 'p') {
+            String initialPositionSignature = record.getBoardState().get(selectedFigure);
+            Vector2 initPosition = boardManager.getBoardUtils().findPositionByFieldSignature(initialPositionSignature);
+            if (initPosition.x == finalPosition.x && initPosition.y != finalPosition.y) {
+                return false; // because pawn tries to beat vertically not diagonally
+            }
+        }
 
         // don't let figure beat if it is not last chosen field
         if (finalPosition.x != foundFigure.getPosition().x
             || finalPosition.y != foundFigure.getPosition().y)
             return false;
-        boardManager.setCapturedFigureId(foundFigure.getFigureId());
-        boardManager.setCapture(true);
+        if (!simulateWithoutBeating) {
+            boardManager.setCapturedFigureId(foundFigure.getFigureId());
+            boardManager.setCapture(true);
+        }
         return true;
     }
 

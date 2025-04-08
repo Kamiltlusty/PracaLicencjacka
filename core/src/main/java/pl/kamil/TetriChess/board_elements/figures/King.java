@@ -63,12 +63,12 @@ public class King extends Figure {
         } else if (finalPosition.x == 6.0 && finalPosition.y == 7.0) {
             if (moveCounter != 0) return false;
             Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(7, 7);
-            if (rook.isPresent() && rook.get() instanceof Rook && rook.get().getMoveCounter() == 0) return false;
+            if (rook.isEmpty() || !(rook.get() instanceof Rook) || rook.get().getMoveCounter() != 0) return false;
             else boardManager.setCastling(true);
         } else if (finalPosition.x == 2.0 && finalPosition.y == 7.0) {
             if (moveCounter != 0) return false;
             Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(0, 7);
-            if (rook.isPresent() && rook.get() instanceof Rook && rook.get().getMoveCounter() == 0) return false;
+            if (rook.isEmpty() || !(rook.get() instanceof Rook) || rook.get().getMoveCounter() != 0) return false;
             else boardManager.setCastling(true);
         }
         return true;

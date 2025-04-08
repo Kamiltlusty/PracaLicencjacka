@@ -8,7 +8,9 @@ import pl.kamil.TetriChess.board_elements.Team;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.board_elements.figures.Queen;
 import pl.kamil.TetriChess.board_elements.figures.Rook;
+import pl.kamil.TetriChess.drawing.DrawManager;
 import pl.kamil.TetriChess.resources.Assets;
+import pl.kamil.TetriChess.resources.GlobalVariables;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
 
@@ -64,6 +66,14 @@ public class GameFlow {
     public void onTouchUp(int screenX, int transformedY) {
         this.touchUpOccurred = true;
         StateBeforeMoveRecord beforeMoveRecord;
+
+        Figure selectedFigure = boardManager.getSelectedFigure();
+        if (selectedFigure == null) return;
+        // very important! it lets me use selectedFigure.getPosition() in all the other methods
+        selectedFigure.setPosition(
+            boardManager.getInitialFieldPosition().x,
+            boardManager.getInitialFieldPosition().y);
+
         // when I don't have check I have to set beforeMoveRecord at first but when check occurs I have to set it before next move
         if (checkType.equals(CheckType.NONE)) {
             beforeMoveRecord = new StateBeforeMoveRecord(
@@ -72,7 +82,9 @@ public class GameFlow {
                 isBlackInCheck(),
                 isCheckmate(),
                 boardManager,
-                boardUtils);
+                boardUtils,
+                activeShape
+            );
 
             stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
         } else beforeMoveRecord = stateBeforeMoveRecordDeque.getFirst();
@@ -84,6 +96,9 @@ public class GameFlow {
             executeMove();
             this.prepare();
 
+            // check draw
+            
+
             // check checkmate if is check
             // when check occurs I have to set beforeMoveRecord before next move for checking checkmate
             if (!checkType.equals(CheckType.NONE)) {
@@ -93,7 +108,9 @@ public class GameFlow {
                     isBlackInCheck(),
                     isCheckmate(),
                     boardManager,
-                    boardUtils);
+                    boardUtils,
+                    activeShape
+                );
                 stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
                 checkCheckmate(beforeMoveRecord);
                 // as checkingCheckmate can change some fields i have to reset them again
@@ -325,4 +342,7 @@ public class GameFlow {
         this.checkType = checkType;
     }
 
+    public void setActiveShape(Shape activeShape) {
+        this.activeShape = activeShape;
+    }
 }

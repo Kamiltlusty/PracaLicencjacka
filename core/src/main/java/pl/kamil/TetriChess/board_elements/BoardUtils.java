@@ -156,6 +156,34 @@ public class BoardUtils {
         return new StringBuilder().append(letter).append(i + 1).toString();
     }
 
+    public float normalizeToGrid(float pos) {
+        if (pos >= 0.0 && pos < 1.12) {
+            return 0.0F;
+        }
+        else if (pos >= 1.12 && pos < 2.24) {
+            return 1.0F;
+        }
+        else if (pos >= 2.24 && pos < 3.36) {
+            return 2.0F;
+        }
+        else if (pos >= 3.36 && pos < 4.48) {
+            return 3.0F;
+        }
+        else if (pos >= 4.48 && pos < 5.60) {
+            return 4.0F;
+        }
+        else if (pos >= 5.60 && pos < 6.72) {
+            return 5.0F;
+        }
+        else if (pos >= 6.72 && pos < 7.84) {
+            return 6.0F;
+        }
+        else if (pos >= 7.84 && pos < 8.96) {
+            return 7.0F;
+        }
+        return 0.0F;
+    }
+
     public String findFieldSignatureByScreenCoordinates(int screenX, int screenY) {
         int j = screenX / GlobalVariables.BOARD_FIELD_SIDE_LENGTH;
         int i = screenY / GlobalVariables.BOARD_FIELD_SIDE_LENGTH;

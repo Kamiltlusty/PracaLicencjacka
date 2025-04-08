@@ -18,10 +18,6 @@ public class Main extends Game {
     // game
     public GameFlow gameFlow;
 
-    // shapes manager
-    public ShapesManager shapesManager;
-
-
     @Override
     public void create() {
         batch = new SpriteBatch();

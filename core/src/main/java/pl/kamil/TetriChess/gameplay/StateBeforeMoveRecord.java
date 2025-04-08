@@ -5,6 +5,7 @@ import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.BoardUtils;
 import pl.kamil.TetriChess.board_elements.Team;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
+import pl.kamil.TetriChess.side_panel.Shape;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,15 +19,17 @@ public class StateBeforeMoveRecord {
     private final BoardManager boardManager;
     private final BoardUtils boardUtils;
     private Map<Figure, String> boardState;
+    private Shape activeShape;
 
 
-    public StateBeforeMoveRecord(Team active, boolean whiteInCheck, boolean blackInCheck, boolean isCheckmate, BoardManager boardManager, BoardUtils boardUtils) {
+    public StateBeforeMoveRecord(Team active, boolean whiteInCheck, boolean blackInCheck, boolean isCheckmate, BoardManager boardManager, BoardUtils boardUtils, Shape activeShape) {
         this.active = active;
         this.whiteInCheck = whiteInCheck;
         this.blackInCheck = blackInCheck;
         this.isCheckmate = isCheckmate;
         this.boardManager = boardManager;
         this.boardUtils = boardUtils;
+        this.activeShape = activeShape;
         boardState = new HashMap<>();
         boardState = readAllFiguresPositions();
     }
@@ -76,5 +79,13 @@ public class StateBeforeMoveRecord {
 
     public Map<Figure, String> getBoardState() {
         return boardState;
+    }
+
+    public Shape getActiveShape() {
+        return activeShape;
+    }
+
+    public void setActiveShape(Shape activeShape) {
+        this.activeShape = activeShape;
     }
 }

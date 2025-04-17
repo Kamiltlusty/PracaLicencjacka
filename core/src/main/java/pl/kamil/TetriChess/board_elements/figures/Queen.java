@@ -13,13 +13,14 @@ public class Queen extends Figure {
     private final Texture figureTexture;
     private final Vector2 position = new Vector2();
     private final Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private static final int value = 1;
+    private final int value;
 
     public Queen(String queenId, Texture queenTexture, float positionX, float positionY, Team team) {
         this.figureId = queenId;
         this.figureTexture = queenTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.value = 9;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {
@@ -92,6 +93,11 @@ public class Queen extends Figure {
 
     public String getFigureId() {
         return figureId;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
     }
 
     public Texture getFigureTexture() {

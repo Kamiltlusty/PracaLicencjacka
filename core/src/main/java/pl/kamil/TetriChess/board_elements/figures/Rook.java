@@ -15,13 +15,14 @@ public class Rook extends Figure {
     private final Texture figureTexture;
     private final Vector2 position = new Vector2();
     private final Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private static final int value = 1;
+    private final int value;
 
     public Rook(String rookId, Texture rookTexture, float positionX, float positionY, Team team) {
         this.figureId = rookId;
         this.figureTexture = rookTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.value = 5;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {
@@ -83,6 +84,11 @@ public class Rook extends Figure {
     @Override
     public String getFigureId() {
         return figureId;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
     }
 
     @Override

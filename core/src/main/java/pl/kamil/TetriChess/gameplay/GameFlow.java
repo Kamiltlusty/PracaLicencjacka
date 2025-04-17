@@ -1,6 +1,7 @@
 package pl.kamil.TetriChess.gameplay;
 
 import com.badlogic.gdx.math.Vector2;
+import pl.kamil.TetriChess.ai.Bot;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.BoardUtils;
 import pl.kamil.TetriChess.board_elements.CheckType;
@@ -33,6 +34,8 @@ public class GameFlow {
     private boolean touchDraggedOccurred;
     private boolean touchUpOccurred;
     private final Deque<StateBeforeMoveRecord> stateBeforeMoveRecordDeque = new ArrayDeque<>();
+    private final Bot bot;
+    private static Integer totalMovesCounter;
 
 
     public GameFlow(Assets assets) {
@@ -41,11 +44,14 @@ public class GameFlow {
         this.shapesManager = new ShapesManager(assets);
         this.boardUtils = boardManager.getBoardUtils();
         this.assets = assets;
+        totalMovesCounter = 0;
 
         // generate shapes
         shapesManager.generateShapes();
         // set initially active shape
         this.activeShape = null;
+
+        this.bot = new Bot(stateBeforeMoveRecordDeque, boardManager, this);
 
         // set initially mouse touch occurrences
         setInitialMouseTouchOccurrence();
@@ -75,7 +81,8 @@ public class GameFlow {
             boardManager.getInitialFieldPosition().y);
 
         // when I don't have check I have to set beforeMoveRecord at first but when check occurs I have to set it before next move
-        if (checkType.equals(CheckType.NONE)) {
+        // i set beforeMoveRecord only once before first move other times i set it after move was made
+        if (totalMovesCounter == 0) {
             beforeMoveRecord = new StateBeforeMoveRecord(
                 getActive(),
                 isWhiteInCheck(),
@@ -97,34 +104,41 @@ public class GameFlow {
             this.prepare();
 
             // check draw
-            
 
-            // check checkmate if is check
+            // set new state before next players move
             // when check occurs I have to set beforeMoveRecord before next move for checking checkmate
+            beforeMoveRecord = new StateBeforeMoveRecord(
+                getActive(),
+                isWhiteInCheck(),
+                isBlackInCheck(),
+                isCheckmate(),
+                boardManager,
+                boardUtils,
+                activeShape
+            );
+            stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
+            // check checkmate if is check
             if (!checkType.equals(CheckType.NONE)) {
-                beforeMoveRecord = new StateBeforeMoveRecord(
-                    getActive(),
-                    isWhiteInCheck(),
-                    isBlackInCheck(),
-                    isCheckmate(),
-                    boardManager,
-                    boardUtils,
-                    activeShape
-                );
-                stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
                 checkCheckmate(beforeMoveRecord);
-                // as checkingCheckmate can change some fields i have to reset them again
-                boardManager.setCastling(false);
-                boardManager.setCapture(false);
-                boardManager.setPromotion(false);
-                boardManager.setCapturedFigureId(null);
-                boardManager.setPromotedFigureId(null);
-                boardManager.setSelectedFigureAsEmpty();
-//                boardManager.setAllFieldsFree();
             }
+            // as checkingCheckmate can change some fields I have to reset them again
+            boardManager.setCastling(false);
+            boardManager.setCapture(false);
+            boardManager.setPromotion(false);
+            boardManager.setCapturedFigureId(null);
+            boardManager.setPromotedFigureId(null);
+            boardManager.setSelectedFigureAsEmpty();
+
+            // bot analysis
+            bot.minimax(beforeMoveRecord, 2, false);
+
+            totalMovesCounter++;
         } else {
             boardManager.UndoFigurePlacement();
-            stateBeforeMoveRecordDeque.removeFirst();
+            if (totalMovesCounter == 0) {// it is removing state only if first move is not validated
+                // in other case state is set at the end so we just do not add next if there was no valid state
+                stateBeforeMoveRecordDeque.removeFirst();
+            }
             boardManager.setCastling(false);
             boardManager.setCapture(false);
             boardManager.setPromotion(false);
@@ -133,13 +147,12 @@ public class GameFlow {
             boardManager.setSelectedFigureAsEmpty();
         }
 
-        // if everything is ok puts figure on place else return false
         touchDownOccurred = false;
         touchDraggedOccurred = false;
         touchUpOccurred = false;
     }
 
-    private void checkCheckmate(StateBeforeMoveRecord beforeMoveRecord) {
+    public void checkCheckmate(StateBeforeMoveRecord beforeMoveRecord) {
 //         check if there is legal move on figures owned by active player
         Map<Figure, List<Vector2>> figuresWithPossibleMoves = boardManager.figuresList.stream()
             .filter(f -> f.getTeam().equals(active))
@@ -167,13 +180,10 @@ public class GameFlow {
                 break;
             }
         }
-
-        if (!foundValidMove) {
-            throw new RuntimeException("Checkmate!!!");
-        }
+        if (!foundValidMove) {isCheckmate = true;}
     }
 
-    private void executeMove() {
+    public void executeMove() {
         if (boardManager.isCapture()) {
             removeCapturedFigure();
         }
@@ -240,7 +250,7 @@ public class GameFlow {
             .filter(f -> !f.getTeam().equals(this.getActive()))
             .findFirst();
         if (capturedFigure.isPresent()) {
-            boardManager.capturedFigures.add(capturedFigure.get());
+            boardManager.getCapturedFigures().add(capturedFigure.get());
             boardManager.getFiguresList().remove(capturedFigure.get());
         } else throw new RuntimeException("Figure that should be in figuresList was not found");
     }
@@ -283,6 +293,17 @@ public class GameFlow {
         boardManager.setAllFieldsFree();
         activeShape = shapesManager.getShapes().pollFirst();
         shapesManager.generateShapes();
+    }
+    public void prepare(boolean generateShapes) {
+        setActive();
+        boardManager.setCastling(false);
+        boardManager.setCapture(false);
+        boardManager.setPromotion(false);
+        boardManager.setCapturedFigureId(null);
+        boardManager.setPromotedFigureId(null);
+        boardManager.setSelectedFigureAsEmpty();
+        boardManager.setAllFieldsFree();
+        activeShape = shapesManager.getShapes().pollFirst();
     }
 
 
@@ -344,5 +365,9 @@ public class GameFlow {
 
     public void setActiveShape(Shape activeShape) {
         this.activeShape = activeShape;
+    }
+
+    public Deque<StateBeforeMoveRecord> getStateBeforeMoveRecordDeque() {
+        return stateBeforeMoveRecordDeque;
     }
 }

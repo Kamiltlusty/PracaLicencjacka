@@ -2,7 +2,6 @@ package pl.kamil.TetriChess.board_elements.figures;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
-import io.vavr.Tuple2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Field;
 import pl.kamil.TetriChess.board_elements.Team;
@@ -16,6 +15,8 @@ public abstract class Figure {
     public abstract Vector2 getPosition();
 
     public abstract String getFigureId();
+
+    public abstract int getValue();
 
     public abstract Team getTeam();
 
@@ -47,7 +48,7 @@ public abstract class Figure {
         // check whether transition is legal
         if (!isTransitionLegal(initialPosition, finalPosition, selectedFigure)) return false;
         // check whether path to final field is blockless
-        return (selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, boardManager))._2;
+        return selectedFigure.isPathBlocksFree(initialPosition, finalPosition, this, boardManager);
     }
 
     public boolean isBeatingLegal(
@@ -157,7 +158,7 @@ public abstract class Figure {
         return Optional.empty();
     }
 
-    protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
+    protected Boolean isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         // check is path figure free
         // how figure moved up/left/diagonally
         System.out.println("finalPosition: " + finalPosition + ", initialPosition: " + initialPosition);
@@ -174,8 +175,8 @@ public abstract class Figure {
                 isFinalAgain = (finalPosition.y == checkPosY && finalPosition.x == checkPosX);
                 // seek for figure
                 String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) checkPosY);
-                Tuple2<Vector2, Boolean> x = checkIsFieldBlocked(board, foundSignature);
-                if (x != null) return x;
+                Boolean isBlocked = isFieldBlocked(board, foundSignature);
+                if (isBlocked) return false;
                 checkPosY += i;
                 checkPosX += j;
             }
@@ -189,8 +190,8 @@ public abstract class Figure {
                 isFinalAgain = (finalPosition.y == checkPosY);
                 // seek for figure
                 String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) initialPosition.x, (int) checkPosY);
-                Tuple2<Vector2, Boolean> x = checkIsFieldBlocked(board, foundSignature);
-                if (x != null) return x;
+                Boolean isBlocked = isFieldBlocked(board, foundSignature);
+                if (isBlocked) return false;
                 checkPosY += i;
             }
         } else if (finalPosition.x != initialPosition.x) {
@@ -202,23 +203,19 @@ public abstract class Figure {
                 isFinalAgain = (finalPosition.x == checkPosX);
                 // seek for figure
                 String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) checkPosX, (int) initialPosition.y);
-                Tuple2<Vector2, Boolean> x = checkIsFieldBlocked(board, foundSignature);
-                if (x != null) return x;
+                Boolean isBlocked = isFieldBlocked(board, foundSignature);
+                if (isBlocked) return false;
                 checkPosX += i;
             }
         }
         // check is path blocks free
-        return new Tuple2<>(new Vector2(finalPosition.x, finalPosition.y), true);
+        return true;
     }
 
-    protected Tuple2<Vector2, Boolean> checkIsFieldBlocked(BoardManager board, String foundSignature) {
+    protected Boolean isFieldBlocked(BoardManager board, String foundSignature) {
         if (!Objects.equals(foundSignature, "-1")) {
-            Vector2 fieldCoordinates = board.findFieldCoordinates(foundSignature);
             Field field = board.getFieldsMap().get(foundSignature);
-            if (field.getBlockedState() == Field.BlockedState.BLOCKED) {
-                return new Tuple2<>(new Vector2(fieldCoordinates.x, fieldCoordinates.y), false);
-            }
-        }
-        return new Tuple2<>(null, true);
+            return field.getBlockedState() == Field.BlockedState.BLOCKED;
+        } else throw new RuntimeException("Figure not found");
     }
 }

@@ -17,7 +17,7 @@ import static pl.kamil.TetriChess.resources.GlobalVariables.SQUARE_1X1_SIDE;
 public class BoardManager {
     private final Map<String, Field> fieldsMap;
     public final List<Figure> figuresList;
-    public final List<Figure> capturedFigures;
+    private final List<Figure> capturedFigures;
     public final List<Figure> promotedPawns;
     private final Assets assets;
     private final BoardUtils boardUtils;
@@ -237,7 +237,7 @@ public class BoardManager {
         return true;
     }
 
-    private boolean isPawnPromotion() {
+    public boolean isPawnPromotion() {
         if (selectedFigure.getFigureId().charAt(0) != 'p') return false;
         if (selectedFigure.getTeam() == Team.BLACK && finalFieldPosition.y == 0) {
             promotedFigureId = selectedFigure.getFigureId();
@@ -704,5 +704,13 @@ public class BoardManager {
 
     public void setPromotedFigureId(String promotedFigureId) {
         this.promotedFigureId = promotedFigureId;
+    }
+
+    public List<Figure> getCapturedFigures() {
+        return capturedFigures;
+    }
+
+    public List<Figure> getPromotedPawns() {
+        return promotedPawns;
     }
 }

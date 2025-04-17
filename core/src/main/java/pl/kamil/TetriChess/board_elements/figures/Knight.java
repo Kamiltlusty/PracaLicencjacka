@@ -2,7 +2,6 @@ package pl.kamil.TetriChess.board_elements.figures;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
-import io.vavr.Tuple2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
 
@@ -16,13 +15,14 @@ public class Knight extends Figure {
     private Texture figureTexture;
     private Vector2 position = new Vector2();
     private Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private static final int value = 1;
+    private final int value;
 
     public Knight(String knightId, Texture knightTexture, float positionX, float positionY, Team team) {
         this.figureId = knightId;
         this.figureTexture = knightTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.value = 3;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selctedFigure) {
@@ -103,13 +103,18 @@ public class Knight extends Figure {
         return Optional.empty();
     }
 
-    protected Tuple2<Vector2, Boolean> isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
+    protected Boolean isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         String foundSignature = board.getBoardUtils().findFieldSignatureByCoordinates((int) finalPosition.x, (int) finalPosition.y);
-        return checkIsFieldBlocked(board, foundSignature);
+        return !isFieldBlocked(board, foundSignature);
     }
 
     public String getFigureId() {
         return figureId;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
     }
 
     public Texture getFigureTexture() {

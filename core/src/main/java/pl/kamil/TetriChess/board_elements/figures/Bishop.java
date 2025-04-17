@@ -13,13 +13,14 @@ public class Bishop extends Figure {
     private final Texture figureTexture;
     private final Vector2 position = new Vector2();
     private final Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private static final int value = 1;
+    private final int value;
 
     public Bishop(String bishopId, Texture bishopTexture, float positionX, float positionY, Team team) {
         this.figureId = bishopId;
         this.figureTexture = bishopTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.value = 3;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {
@@ -83,5 +84,10 @@ public class Bishop extends Figure {
 
     public Team getTeam() {
         return team;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
     }
 }

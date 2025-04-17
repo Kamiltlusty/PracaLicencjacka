@@ -13,8 +13,7 @@ public class King extends Figure {
     private final String figureId;
     private final Texture figureTexture;
     private final Vector2 position = new Vector2();
-    private final Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private static final int value = 1;
+    private final Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie;
 
     public King(String kingId, Texture kingTexture, float positionX, float positionY, Team team) {
         this.figureId = kingId;
@@ -139,6 +138,11 @@ public class King extends Figure {
 
     public String getFigureId() {
         return figureId;
+    }
+
+    @Override
+    public int getValue() {
+        return 1000;
     }
 
     public Texture getFigureTexture() {

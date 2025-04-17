@@ -14,13 +14,14 @@ public class Pawn extends Figure {
     private Texture figureTexture;
     private Vector2 position = new Vector2();
     private Team team; // dla uproszczenia zbijania, przewidywania w algorytmie czy mamy sytuacje, gdy jest bicie
-    private static final int value = 1;
+    private final int value;
 
     public Pawn(String pawnId, Texture pawnTexture, float positionX, float positionY, Team team) {
         this.figureId = pawnId;
         this.figureTexture = pawnTexture;
         this.position.set(positionX, positionY);
         this.team = team;
+        this.value = 1;
     }
 
     @Override
@@ -121,6 +122,11 @@ public class Pawn extends Figure {
 
     public String getFigureId() {
         return figureId;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
     }
 
     public Texture getFigureTexture() {

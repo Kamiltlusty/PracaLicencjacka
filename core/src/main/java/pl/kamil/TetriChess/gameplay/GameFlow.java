@@ -130,7 +130,7 @@ public class GameFlow {
             boardManager.setSelectedFigureAsEmpty();
 
             // bot analysis
-            bot.minimax(beforeMoveRecord, 2, false);
+            bot.makeMoveAsBot(beforeMoveRecord, 2);
 
             totalMovesCounter++;
         } else {
@@ -261,7 +261,7 @@ public class GameFlow {
         touchUpOccurred = false;
     }
 
-    private void setActive() {
+    public void setActive() {
         this.active = active.equals(Team.WHITE) ? Team.BLACK : Team.WHITE;
     }
 
@@ -282,7 +282,10 @@ public class GameFlow {
     }
 
     public void prepare() {
-        if (isCheckmate) System.exit(0);
+        if (isCheckmate) {
+            System.out.println("system exit!");
+            System.exit(0);
+        }
         setActive();
         boardManager.setCastling(false);
         boardManager.setCapture(false);

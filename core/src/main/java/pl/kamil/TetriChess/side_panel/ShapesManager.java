@@ -34,7 +34,8 @@ public class ShapesManager {
 
     public void generateShapes() {
         if (isFirst) {
-            for (int i = 0; i < 4; i++) {
+            // why am I generating 8 shapes forward i doubled needed amount for depth 4 in minimax
+            for (int i = 0; i < 8; i++) {
                 Tuple4<Integer, Character, Integer, Integer> values = shapeValuesGenerator.generate();
                 shapes.add(createShape(values._1, values._2, values._3, values._4));
             }

@@ -130,7 +130,7 @@ public class GameFlow {
             boardManager.setSelectedFigureAsEmpty();
 
             // bot analysis
-            bot.makeMoveAsBot(beforeMoveRecord, 2);
+            bot.makeMoveAsBot(beforeMoveRecord, 4);
 
             totalMovesCounter++;
         } else {
@@ -284,7 +284,6 @@ public class GameFlow {
     public void prepare() {
         if (isCheckmate) {
             System.out.println("system exit!");
-            System.exit(0);
         }
         setActive();
         boardManager.setCastling(false);

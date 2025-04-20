@@ -22,7 +22,7 @@ public class Rook extends Figure {
         this.figureTexture = rookTexture;
         this.position.set(positionX, positionY);
         this.team = team;
-        this.value = 5;
+        this.value = 50;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {

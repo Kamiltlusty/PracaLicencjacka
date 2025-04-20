@@ -22,7 +22,7 @@ public class Knight extends Figure {
         this.figureTexture = knightTexture;
         this.position.set(positionX, positionY);
         this.team = team;
-        this.value = 3;
+        this.value = 30;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selctedFigure) {

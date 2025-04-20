@@ -20,7 +20,7 @@ public class Queen extends Figure {
         this.figureTexture = queenTexture;
         this.position.set(positionX, positionY);
         this.team = team;
-        this.value = 9;
+        this.value = 90;
     }
 
     public boolean isTransitionLegal(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure) {

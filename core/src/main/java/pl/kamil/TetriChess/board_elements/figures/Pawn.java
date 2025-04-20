@@ -21,7 +21,7 @@ public class Pawn extends Figure {
         this.figureTexture = pawnTexture;
         this.position.set(positionX, positionY);
         this.team = team;
-        this.value = 1;
+        this.value = 10;
     }
 
     @Override

@@ -20,6 +20,7 @@ public class Bot {
     private final Deque<Map<Integer, List<Tuple2<String, Vector2>>>> evaluationsDeque = new ArrayDeque<>(); // <level_of_deep<evaluation_score, List<Tuple2<FigureId, FinalPosition>>>> for one key i can have few results
     private Integer evaluationScore; // bot is trying to make score on minus and the lowest he can
     private Integer evaluationScoreRoot; // bot is trying to make score on minus and the lowest he can
+    private final TranspositionTable transpositionTable = new TranspositionTable();
 
     public Bot(Deque<StateBeforeMoveRecord> beforeMoveRecordDeque, BoardManager boardManager, GameFlow gameFlow) {
         this.stateBeforeMoveRecordDeque = beforeMoveRecordDeque;
@@ -43,6 +44,8 @@ public class Bot {
             prepareForMoveExecution(bestFigure, bestMove._2);
             gameFlow.executeMove();
             gameFlow.prepare();
+            // should I check here is checkmate???? as it is in findBestMove or Minimax methods
+            setNewStateBeforeMoveRecord();
         } else throw new RuntimeException("No available moves found");
     }
 
@@ -86,18 +89,27 @@ public class Bot {
             // reference needs has to be changed
             beforeMoveRecord = stateBeforeMoveRecordDeque.getFirst();
             undoLastMove(selectedFig, beforeMoveRecord);
-            gameFlow.setActive();
 
             if (beta <= alpha) {
                 break;
             }
         }
-//        }
 
         return bestMove;
     }
 
     public int minimax(StateBeforeMoveRecord beforeMoveRecord, int depth, boolean isMaximizingPlayer, int alpha, int beta) {
+        String boardHash = beforeMoveRecord.getSimpleHash();
+
+        // checking for eval in transposition table
+        if (transpositionTable.contains(boardHash)) {
+            TranspositionEntry entry = transpositionTable.get(boardHash);
+
+            if (entry.getDepth() >= depth) {
+                return entry.getEval();
+            }
+        }
+
         // decide whether to go back in stack or go deeper
         if (depth == 0 || gameFlow.isCheckmate()) {
             return evaluatePosition(beforeMoveRecord);
@@ -136,12 +148,13 @@ public class Bot {
                 // reference needs has to be changed
                 beforeMoveRecord = stateBeforeMoveRecordDeque.getFirst();
                 undoLastMove(selectedFig, beforeMoveRecord);
-                gameFlow.setActive();
 
                 if (beta <= alpha) {
                     return maxEval;
                 }
             }
+
+            transpositionTable.put(boardHash, maxEval, depth);
             return maxEval;
         } else {
             int minEval = Integer.MAX_VALUE;
@@ -174,12 +187,13 @@ public class Bot {
                 // reference needs has to be changed
                 beforeMoveRecord = stateBeforeMoveRecordDeque.getFirst();
                 undoLastMove(selectedFig, beforeMoveRecord);
-                gameFlow.setActive();
 
                 if (beta <= alpha) {
                     return minEval;
                 }
             }
+
+            transpositionTable.put(boardHash, minEval, depth);
             return minEval;
         }
     }
@@ -188,6 +202,7 @@ public class Bot {
         // add it as a new state to state before move record
         StateBeforeMoveRecord newBeforeMoveRecord = new StateBeforeMoveRecord(
             gameFlow.getActive(),
+            gameFlow.getCheckType(),
             gameFlow.isWhiteInCheck(),
             gameFlow.isBlackInCheck(),
             gameFlow.isCheckmate(),
@@ -351,35 +366,20 @@ public class Bot {
 
         // get back rook if was castling
         if (selectedFig.getFigureId().charAt(0) == 'K' && selectedFig.getMoveCounter() == 1) {
-            if (selectedFig.getPosition().x == 6.0 && selectedFig.getPosition().y == 0.0) {
+            if (selectedFig.getPosition().x == 6 && selectedFig.getPosition().y == 0) {
                 Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(5, 0);
-                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(7.0f, 0.0f);
-            } else if (selectedFig.getPosition().x == 2.0 && selectedFig.getPosition().y == 0.0) {
-                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(3.0f, 0);
-                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(0.0f, 0.0f);
-            } else if (selectedFig.getPosition().x == 6.0 && selectedFig.getPosition().y == 7.0) {
-                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(5.0f, 7);
-                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(7.0f, 7.0f);
-            } else if (selectedFig.getPosition().x == 2.0 && selectedFig.getPosition().y == 7.0) {
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(7, 0);
+            } else if (selectedFig.getPosition().x == 2 && selectedFig.getPosition().y == 0) {
+                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(3, 0);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(0, 0);
+            } else if (selectedFig.getPosition().x == 6 && selectedFig.getPosition().y == 7) {
+                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(5, 7);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(7, 7);
+            } else if (selectedFig.getPosition().x == 2 && selectedFig.getPosition().y == 7) {
                 Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(3, 7);
-                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(0, 7.0f);
+                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(0, 7);
             }
         }
-//        if (boardManager.isCastling()) {
-//            if (boardManager.getFinalFieldPosition().x == 6.0 && boardManager.getFinalFieldPosition().y == 0.0) {
-//                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(5, 0);
-//                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(7.0f, 0.0f);
-//            } else if (boardManager.getFinalFieldPosition().x == 2.0 && boardManager.getFinalFieldPosition().y == 0.0) {
-//                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(3.0f, 0);
-//                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(0.0f, 0.0f);
-//            } else if (boardManager.getFinalFieldPosition().x == 6.0 && boardManager.getFinalFieldPosition().y == 7.0) {
-//                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(5.0f, 7);
-//                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(7.0f, 7.0f);
-//            } else if (boardManager.getFinalFieldPosition().x == 2.0 && boardManager.getFinalFieldPosition().y == 7.0) {
-//                Optional<Figure> rook = boardManager.findFigureByCoordinatesAndReturn(3, 7);
-//                if (rook.isPresent() && rook.get() instanceof Rook) rook.get().setPosition(0, 7.0f);
-//            }
-//        }
 
         // if was promotion then in figures list we would have queen with id like QW1 or QB2 or QW2 ...
         // start checking if there are promotedPawns and selectedFig is pawn
@@ -449,6 +449,13 @@ public class Bot {
 //                    );
 //            }
 //        }
+        // set game flow fields from before move state
+        gameFlow.setWhiteInCheck(beforeMoveRecord.isWhiteInCheck());
+        gameFlow.setBlackInCheck(beforeMoveRecord.isBlackInCheck());
+        gameFlow.setCheckType(beforeMoveRecord.getCheckType());
+        gameFlow.setCheckmate(beforeMoveRecord.isCheckmate());
+        gameFlow.setActive(beforeMoveRecord.getActive());
+        gameFlow.setActiveShape(beforeMoveRecord.getActiveShape());
         // set figure on initial position
         String fieldSignature = beforeMoveRecord.getBoardState().get(selectedFig);
         Vector2 initialPosition = boardManager.getBoardUtils().findPositionByFieldSignature(fieldSignature);
@@ -519,11 +526,12 @@ public class Bot {
             boardManager.setCapturedFigureId(figureToBeat.get().getFigureId());
         }
         // if is castling -> set castling
-        if (selectedFig.getFigureId().charAt(0) == 'K') {
-            boolean specificMoveLegal = selectedFig.isSpecificMoveLegal(selectedFig.getPosition(), move, selectedFig, null, boardManager);
-            if (specificMoveLegal) {
-                boardManager.setCastling(true);
-            }
+        if (selectedFig.getFigureId().charAt(0) == 'K' && Math.abs(selectedFig.getPosition().x - move.x) == 2) {
+            boardManager.setCastling(true);
+//            boolean specificMoveLegal = selectedFig.isSpecificMoveLegal(selectedFig.getPosition(), move, selectedFig, null, boardManager);
+//            if (specificMoveLegal) {
+//                boardManager.setCastling(true);
+//            }
         }
         // if is promotion -> set promotion
         if (boardManager.isPawnPromotion()) boardManager.setPromotion(true);

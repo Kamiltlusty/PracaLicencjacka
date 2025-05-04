@@ -3,16 +3,19 @@ package pl.kamil.TetriChess.gameplay;
 import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.BoardUtils;
+import pl.kamil.TetriChess.board_elements.CheckType;
 import pl.kamil.TetriChess.board_elements.Team;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.side_panel.Shape;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class StateBeforeMoveRecord {
     private Team active;
+    private CheckType checkType;
     private boolean whiteInCheck;
     private boolean blackInCheck;
     private boolean isCheckmate;
@@ -22,8 +25,9 @@ public class StateBeforeMoveRecord {
     private Shape activeShape;
 
 
-    public StateBeforeMoveRecord(Team active, boolean whiteInCheck, boolean blackInCheck, boolean isCheckmate, BoardManager boardManager, BoardUtils boardUtils, Shape activeShape) {
+    public StateBeforeMoveRecord(Team active, CheckType checkType, boolean whiteInCheck, boolean blackInCheck, boolean isCheckmate, BoardManager boardManager, BoardUtils boardUtils, Shape activeShape) {
         this.active = active;
+        this.checkType = checkType;
         this.whiteInCheck = whiteInCheck;
         this.blackInCheck = blackInCheck;
         this.isCheckmate = isCheckmate;
@@ -43,6 +47,23 @@ public class StateBeforeMoveRecord {
             figuresMap.put(figure, signature);
         }
         return figuresMap;
+    }
+
+    public String getSimpleHash() {
+        StringBuilder hashBuilder = new StringBuilder();
+
+        boardState.entrySet().stream()
+            .sorted(Comparator.comparing(e -> e.getKey().getFigureId()))
+            .forEach(e -> {
+                hashBuilder.append(e.getKey().getFigureId());
+                hashBuilder.append(e.getValue());
+            });
+
+        hashBuilder.append(active.toString());
+        hashBuilder.append(whiteInCheck ? "1" : "0");
+        hashBuilder.append(blackInCheck ? "1" : "0");
+
+        return hashBuilder.toString();
     }
 
     public boolean isWhiteInCheck() {
@@ -87,5 +108,9 @@ public class StateBeforeMoveRecord {
 
     public void setActiveShape(Shape activeShape) {
         this.activeShape = activeShape;
+    }
+
+    public CheckType getCheckType() {
+        return checkType;
     }
 }

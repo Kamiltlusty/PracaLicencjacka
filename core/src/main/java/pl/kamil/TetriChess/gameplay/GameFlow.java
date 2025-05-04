@@ -2,16 +2,11 @@ package pl.kamil.TetriChess.gameplay;
 
 import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.ai.Bot;
-import pl.kamil.TetriChess.board_elements.BoardManager;
-import pl.kamil.TetriChess.board_elements.BoardUtils;
-import pl.kamil.TetriChess.board_elements.CheckType;
-import pl.kamil.TetriChess.board_elements.Team;
+import pl.kamil.TetriChess.board_elements.*;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.board_elements.figures.Queen;
 import pl.kamil.TetriChess.board_elements.figures.Rook;
-import pl.kamil.TetriChess.drawing.DrawManager;
 import pl.kamil.TetriChess.resources.Assets;
-import pl.kamil.TetriChess.resources.GlobalVariables;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
 
@@ -85,6 +80,7 @@ public class GameFlow {
         if (totalMovesCounter == 0) {
             beforeMoveRecord = new StateBeforeMoveRecord(
                 getActive(),
+                getCheckType(),
                 isWhiteInCheck(),
                 isBlackInCheck(),
                 isCheckmate(),
@@ -109,6 +105,7 @@ public class GameFlow {
             // when check occurs I have to set beforeMoveRecord before next move for checking checkmate
             beforeMoveRecord = new StateBeforeMoveRecord(
                 getActive(),
+                getCheckType(),
                 isWhiteInCheck(),
                 isBlackInCheck(),
                 isCheckmate(),
@@ -128,7 +125,6 @@ public class GameFlow {
             boardManager.setCapturedFigureId(null);
             boardManager.setPromotedFigureId(null);
             boardManager.setSelectedFigureAsEmpty();
-
             // bot analysis
             bot.makeMoveAsBot(beforeMoveRecord, 4);
 
@@ -210,9 +206,7 @@ public class GameFlow {
             // check amount of promoted pawns in one team and increase number by 1 to make index for new figure
             boardManager.figuresList.remove(boardManager.getSelectedFigure());
             boardManager.promotedPawns.add(boardManager.getSelectedFigure());
-            long newFigureIdNumber = boardManager.promotedPawns.stream()
-                .filter(f -> f.getTeam().equals(active))
-                .count();
+            long newFigureIdNumber = FigureIdGenerator.generate();
             Figure promotedQueen;
             if (active == Team.BLACK) {
                 String figureId = "QB" + newFigureIdNumber;
@@ -295,6 +289,7 @@ public class GameFlow {
         boardManager.setAllFieldsFree();
         activeShape = shapesManager.getShapes().pollFirst();
         shapesManager.generateShapes();
+        boardManager.blockFieldsWithNewShape();
     }
     public void prepare(boolean generateShapes) {
         setActive();
@@ -306,6 +301,7 @@ public class GameFlow {
         boardManager.setSelectedFigureAsEmpty();
         boardManager.setAllFieldsFree();
         activeShape = shapesManager.getShapes().pollFirst();
+        boardManager.blockFieldsWithNewShape();
     }
 
 
@@ -371,5 +367,9 @@ public class GameFlow {
 
     public Deque<StateBeforeMoveRecord> getStateBeforeMoveRecordDeque() {
         return stateBeforeMoveRecordDeque;
+    }
+
+    public void setCheckmate(boolean checkmate) {
+        isCheckmate = checkmate;
     }
 }

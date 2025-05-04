@@ -330,6 +330,10 @@ public class BoardManager {
         // get shape back
         gameFlow.setActiveShape(beforeMoveRecord.getActiveShape());
         setAllFieldsFree();
+        blockFieldsWithNewShape();
+    }
+
+    public void blockFieldsWithNewShape() {
         // to make fields blocked
         Shape activeShape = gameFlow.getActiveShape();
         if (activeShape != null) {
@@ -356,9 +360,7 @@ public class BoardManager {
             // check amount of promoted pawns in one team and increase number by 1 to make index for new figure
             figuresList.remove(selectedFigure);
             promotedPawns.add(selectedFigure);
-            long newFigureIdNumber = promotedPawns.stream()
-                .filter(f -> f.getTeam().equals(active))
-                .count();
+            long newFigureIdNumber = FigureIdGenerator.generate();
             Figure promotedQueen;
             if (active == Team.BLACK) {
                 String figureId = "QB" + newFigureIdNumber;
@@ -395,22 +397,7 @@ public class BoardManager {
         gameFlow.setActiveShape(gameFlow.getShapesManager().getShapes().getFirst());
         setAllFieldsFree();
         // to make fields blocked
-        Shape activeShape = gameFlow.getActiveShape();
-        if (activeShape != null) {
-            Character letter = activeShape.getLetter();
-            Integer number = activeShape.getNumber();
-            String fieldSignature = letter + String.valueOf(number);
-            // to make fields blocked
-            Field field = getFieldsMap().get(fieldSignature);
-            List<Square1x1> list = activeShape.getSquare3x3().getSquares().values().stream().filter(v -> v.getTexture() != null).toList();
-            for (var el : list) {
-                String signature = boardUtils.findFieldSignature(
-                    (int) (field.getPosition().y + el.getRectangle().y/SQUARE_1X1_SIDE),
-                    (int) (field.getPosition().x + el.getRectangle().x/SQUARE_1X1_SIDE));
-                Field fieldToBlock = getFieldsMap().get(signature);
-                fieldToBlock.setBlockedState(Field.BlockedState.BLOCKED);
-            }
-        }
+        blockFieldsWithNewShape();
     }
 
     private List<Figure> isCancellingCheck(StateBeforeMoveRecord beforeMoveRecord) {

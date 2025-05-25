@@ -1,12 +1,15 @@
 package pl.kamil.TetriChess.gameplay;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import pl.kamil.TetriChess.Main;
 import pl.kamil.TetriChess.ai.Bot;
 import pl.kamil.TetriChess.board_elements.*;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.board_elements.figures.Queen;
 import pl.kamil.TetriChess.board_elements.figures.Rook;
 import pl.kamil.TetriChess.resources.Assets;
+import pl.kamil.TetriChess.screens.GameOverScreen;
 import pl.kamil.TetriChess.side_panel.Shape;
 import pl.kamil.TetriChess.side_panel.ShapesManager;
 
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 public class GameFlow {
     private final BoardManager boardManager;
     private final ShapesManager shapesManager;
+    private final SpriteBatch batch;
     private final BoardUtils boardUtils;
     private final Assets assets;
     private Shape activeShape;
@@ -24,19 +28,22 @@ public class GameFlow {
     private CheckType checkType = CheckType.NONE;
     private boolean whiteInCheck = false;
     private boolean blackInCheck = false;
-    private boolean isCheckmate = false;
+    private boolean isGameOver = false;
     private boolean touchDownOccurred;
     private boolean touchDraggedOccurred;
     private boolean touchUpOccurred;
     private final Deque<StateBeforeMoveRecord> stateBeforeMoveRecordDeque = new ArrayDeque<>();
     private final Bot bot;
     private static Integer totalMovesCounter;
+    private Main main;
 
 
-    public GameFlow(Assets assets) {
+    public GameFlow(Assets assets, SpriteBatch batch, Main main) {
         // crate new game/board
+        this.main = main;
         this.boardManager = new BoardManager(assets, this);
         this.shapesManager = new ShapesManager(assets);
+        this.batch = batch;
         this.boardUtils = boardManager.getBoardUtils();
         this.assets = assets;
         totalMovesCounter = 0;
@@ -64,7 +71,7 @@ public class GameFlow {
         boardManager.moveFigureOverBoard(screenX, transformedY);
     }
 
-    public void onTouchUp(int screenX, int transformedY) {
+    public void onTouchUp(int screenX, int transformedY) throws InterruptedException {
         this.touchUpOccurred = true;
         StateBeforeMoveRecord beforeMoveRecord;
 
@@ -83,7 +90,7 @@ public class GameFlow {
                 getCheckType(),
                 isWhiteInCheck(),
                 isBlackInCheck(),
-                isCheckmate(),
+                isGameOver(),
                 boardManager,
                 boardUtils,
                 activeShape
@@ -99,8 +106,6 @@ public class GameFlow {
             executeMove();
             this.prepare();
 
-            // check draw
-
             // set new state before next players move
             // when check occurs I have to set beforeMoveRecord before next move for checking checkmate
             beforeMoveRecord = new StateBeforeMoveRecord(
@@ -108,16 +113,19 @@ public class GameFlow {
                 getCheckType(),
                 isWhiteInCheck(),
                 isBlackInCheck(),
-                isCheckmate(),
+                isGameOver(),
                 boardManager,
                 boardUtils,
                 activeShape
             );
             stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
-            // check checkmate if is check
-            if (!checkType.equals(CheckType.NONE)) {
-                checkCheckmate(beforeMoveRecord);
-            }
+            // check checkmate if is check or if was check in enemy move
+            // or if attacking figure is blocked
+//            if (!checkType.equals(CheckType.NONE) ||
+//                !stateBeforeMoveRecordDeque.getFirst().getCheckType().equals(CheckType.NONE) ||
+//                isBlockedFigureAttackingKing()
+//            )
+            checkGameOver(beforeMoveRecord);
             // as checkingCheckmate can change some fields I have to reset them again
             boardManager.setCastling(false);
             boardManager.setCapture(false);
@@ -125,9 +133,34 @@ public class GameFlow {
             boardManager.setCapturedFigureId(null);
             boardManager.setPromotedFigureId(null);
             boardManager.setSelectedFigureAsEmpty();
+            isOver();
+            long start = System.currentTimeMillis();
             // bot analysis
             bot.makeMoveAsBot(beforeMoveRecord, 4);
-
+            // set new state before next players move
+            long end = System.currentTimeMillis();
+//            System.out.println("Czas: " + (end - start) + " ms");
+            // when check occurs I have to set beforeMoveRecord before next move for checking checkmate
+            beforeMoveRecord = new StateBeforeMoveRecord(
+                getActive(),
+                getCheckType(),
+                isWhiteInCheck(),
+                isBlackInCheck(),
+                isGameOver(),
+                boardManager,
+                boardUtils,
+                activeShape
+            );
+            stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
+            checkGameOver(beforeMoveRecord);
+//            // as checkingCheckmate can change some fields I have to reset them again
+            boardManager.setCastling(false);
+            boardManager.setCapture(false);
+            boardManager.setPromotion(false);
+            boardManager.setCapturedFigureId(null);
+            boardManager.setPromotedFigureId(null);
+            boardManager.setSelectedFigureAsEmpty();
+            isOver();
             totalMovesCounter++;
         } else {
             boardManager.UndoFigurePlacement();
@@ -148,7 +181,49 @@ public class GameFlow {
         touchUpOccurred = false;
     }
 
-    public void checkCheckmate(StateBeforeMoveRecord beforeMoveRecord) {
+    private boolean isBlockedFigureAttackingKing() {
+        List<Field> blockedFields = boardManager.getFieldsMap().values().stream()
+            .filter(f -> f.getBlockedState().equals(Field.BlockedState.BLOCKED))
+            .toList();
+        Set<Vector2> blockedPositions = blockedFields.stream()
+            .map(f -> new Vector2(f.getPosition().x, f.getPosition().y))
+            .collect(Collectors.toSet());
+
+        List<Figure> blockedFigures = boardManager.getFiguresList().stream()
+            .filter(f -> !f.getTeam().equals(getActive()))
+            .filter(f -> blockedPositions.contains(f.getPosition()))
+            .toList();
+
+        Figure myKing = boardManager.getFiguresList().stream().filter(
+                f -> f.getFigureId().charAt(0) == 'K'
+            ).filter(f -> f.getTeam().equals(getActive()))
+            .findFirst().get();
+
+        Optional<Figure> attackingFigure = blockedFigures.stream()
+            .filter(f -> f.isPathFigureFree(f.getPosition(), myKing.getPosition(), f, boardManager).isPresent())
+            .findFirst();
+
+        return attackingFigure.isPresent();
+    }
+
+    private void isOver() throws InterruptedException {
+        if (main.gameScreen != null) {
+            main.gameScreen.render(0);
+            Thread.sleep(10000);
+        }
+        if (isGameOver && isBlackInCheck()) {
+            main.setScreen(new GameOverScreen(batch, assets, this, 0));
+            System.out.println("White wins ");
+        } else if (isGameOver && isWhiteInCheck()) {
+            main.setScreen(new GameOverScreen(batch, assets, this, 1));
+            System.out.println("Black wins ");
+        } else if (isGameOver) {
+            main.setScreen(new GameOverScreen(batch, assets, this, 2));
+            System.out.println("draw");
+        }
+    }
+
+    public void checkGameOver(StateBeforeMoveRecord beforeMoveRecord) {
 //         check if there is legal move on figures owned by active player
         Map<Figure, List<Vector2>> figuresWithPossibleMoves = boardManager.figuresList.stream()
             .filter(f -> f.getTeam().equals(active))
@@ -176,7 +251,25 @@ public class GameFlow {
                 break;
             }
         }
-        if (!foundValidMove) {isCheckmate = true;}
+        if (boardManager.figuresList.size() <= 4) {
+            if (boardManager.figuresList.size() == 2) {
+                isGameOver = true;
+            } else if (boardManager.figuresList.size() == 3) {
+                Optional<Figure> figureOptional = boardManager.figuresList.stream().filter(f -> f.getFigureId().charAt(0) == 'k'
+                    || f.getFigureId().charAt(0) == 'b').findFirst();
+                if (figureOptional.isPresent()) {
+                    isGameOver = true;
+                }
+            } else if (boardManager.figuresList.size() == 4) {
+                long bishopNumber = boardManager.figuresList.stream().filter(f ->  f.getFigureId().charAt(0) == 'b').count();
+                if (bishopNumber == 2) {
+                    isGameOver = true;
+                }
+            }
+        }
+        if (!foundValidMove) {
+            isGameOver = true;
+        }
     }
 
     public void executeMove() {
@@ -276,9 +369,6 @@ public class GameFlow {
     }
 
     public void prepare() {
-        if (isCheckmate) {
-            System.out.println("system exit!");
-        }
         setActive();
         boardManager.setCastling(false);
         boardManager.setCapture(false);
@@ -291,6 +381,7 @@ public class GameFlow {
         shapesManager.generateShapes();
         boardManager.blockFieldsWithNewShape();
     }
+
     public void prepare(boolean generateShapes) {
         setActive();
         boardManager.setCastling(false);
@@ -349,8 +440,8 @@ public class GameFlow {
         this.active = active;
     }
 
-    public boolean isCheckmate() {
-        return isCheckmate;
+    public boolean isGameOver() {
+        return isGameOver;
     }
 
     public CheckType getCheckType() {
@@ -369,7 +460,7 @@ public class GameFlow {
         return stateBeforeMoveRecordDeque;
     }
 
-    public void setCheckmate(boolean checkmate) {
-        isCheckmate = checkmate;
+    public void setGameOver(boolean checkmate) {
+        isGameOver = checkmate;
     }
 }

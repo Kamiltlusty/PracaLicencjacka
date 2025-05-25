@@ -284,4 +284,68 @@ public class FiguresSetup {
             );
         }
     }
+
+    public void setupFromFEN(String fen) {
+        board.figuresList.clear();
+
+        String[] parts = fen.split(" ");
+        String[] rows = parts[0].split("/");
+
+        for (int i = 0; i < 8; i++) {
+            int j = 0;
+            char[] charArray = rows[i].toCharArray();
+            for (int k = 0; k < charArray.length; k++) {
+                char symbol = charArray[k];
+                if (Character.isDigit(symbol)) {
+                    j += Character.getNumericValue(symbol);
+                } else {
+                    int start = rows[i].indexOf('{');
+                    int end = rows[i].indexOf('}');
+                    int len = end - start;
+
+                    Team team = rows[i].charAt(end - 1) == 'W' ? Team.WHITE : Team.BLACK;
+                    char pieceType = rows[i].charAt(start + 1);
+                    // 4{KW}3 = 4 - 1 = 3
+
+                    Texture texture = getTextureForPiece(pieceType, team);
+                    String fieldSignature = board.getBoardUtils().findFieldSignature(i, j);
+                    float x = board.getFieldsMap().get(fieldSignature).getPosition().x;
+                    float y = board.getFieldsMap().get(fieldSignature).getPosition().y;
+
+                    Figure piece = createFigure(pieceType, team, texture, x, y);
+                    if (piece != null) {
+                        board.figuresList.add(piece);
+                    }
+                    j++;
+                    k += len;
+                }
+            }
+        }
+    }
+
+    private Texture getTextureForPiece(char type, Team team) {
+        switch (type) {
+            case 'p': return team == Team.WHITE ? pawn_texture_white : pawn_texture_black;
+            case 'r': return team == Team.WHITE ? rook_texture_white : rook_texture_black;
+            case 'k': return team == Team.WHITE ? knight_texture_white : knight_texture_black;
+            case 'b': return team == Team.WHITE ? bishop_texture_white : bishop_texture_black;
+            case 'Q': return team == Team.WHITE ? queen_texture_white : queen_texture_black;
+            case 'K': return team == Team.WHITE ? king_texture_white : king_texture_black;
+            default: return null;
+        }
+    }
+
+    private Figure createFigure(char type, Team team, Texture texture, float x, float y) {
+        String id = type + (team == Team.WHITE ? "W" : "B");
+
+        return switch (type) {
+            case 'p' -> new Pawn(id, texture, x, y, team);
+            case 'r' -> new Rook(id, texture, x, y, team);
+            case 'k' -> new Knight(id, texture, x, y, team);
+            case 'b' -> new Bishop(id, texture, x, y, team);
+            case 'Q' -> new Queen(id, texture, x, y, team);
+            case 'K' -> new King(id, texture, x, y, team);
+            default -> null;
+        };
+    }
 }

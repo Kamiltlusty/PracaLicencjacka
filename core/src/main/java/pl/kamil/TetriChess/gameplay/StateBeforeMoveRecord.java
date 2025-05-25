@@ -18,19 +18,19 @@ public class StateBeforeMoveRecord {
     private CheckType checkType;
     private boolean whiteInCheck;
     private boolean blackInCheck;
-    private boolean isCheckmate;
+    private boolean isGameOver;
     private final BoardManager boardManager;
     private final BoardUtils boardUtils;
     private Map<Figure, String> boardState;
     private Shape activeShape;
 
 
-    public StateBeforeMoveRecord(Team active, CheckType checkType, boolean whiteInCheck, boolean blackInCheck, boolean isCheckmate, BoardManager boardManager, BoardUtils boardUtils, Shape activeShape) {
+    public StateBeforeMoveRecord(Team active, CheckType checkType, boolean whiteInCheck, boolean blackInCheck, boolean isGameOver, BoardManager boardManager, BoardUtils boardUtils, Shape activeShape) {
         this.active = active;
         this.checkType = checkType;
         this.whiteInCheck = whiteInCheck;
         this.blackInCheck = blackInCheck;
-        this.isCheckmate = isCheckmate;
+        this.isGameOver = isGameOver;
         this.boardManager = boardManager;
         this.boardUtils = boardUtils;
         this.activeShape = activeShape;
@@ -74,8 +74,8 @@ public class StateBeforeMoveRecord {
         return blackInCheck;
     }
 
-    public boolean isCheckmate() {
-        return isCheckmate;
+    public boolean isGameOver() {
+        return isGameOver;
     }
 
     public Team getActive() {
@@ -94,8 +94,8 @@ public class StateBeforeMoveRecord {
         this.blackInCheck = blackInCheck;
     }
 
-    public void setCheckmate(boolean checkmate) {
-        isCheckmate = checkmate;
+    public void setGameOver(boolean gameOver) {
+        isGameOver = gameOver;
     }
 
     public Map<Figure, String> getBoardState() {

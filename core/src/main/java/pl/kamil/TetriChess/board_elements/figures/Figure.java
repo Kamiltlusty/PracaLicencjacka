@@ -92,7 +92,6 @@ public abstract class Figure {
         // check whether path to final fields is figureless and if not save figure as to be captured
         // check is path figure free
         // how figure moved up/left/diagonally
-        System.out.println("finalPosition: " + finalPosition + ", initialPosition: " + initialPosition);
         boolean isFinalAgain = false;
         if (finalPosition.y != initialPosition.y && finalPosition.x != initialPosition.x) {
             int i = finalPosition.y > initialPosition.y ? 1 : -1;
@@ -161,7 +160,6 @@ public abstract class Figure {
     protected Boolean isPathBlocksFree(Vector2 initialPosition, Vector2 finalPosition, Figure selectedFigure, BoardManager board) {
         // check is path figure free
         // how figure moved up/left/diagonally
-        System.out.println("finalPosition: " + finalPosition + ", initialPosition: " + initialPosition);
         boolean isFinalAgain = false;
         if (finalPosition.y != initialPosition.y && finalPosition.x != initialPosition.x) {
             int i = finalPosition.y > initialPosition.y ? 1 : -1;

@@ -7,6 +7,9 @@ public class Assets {
     // asset manager
     public final AssetManager manager = new AssetManager();
 
+    // panel background
+    public static final String PANEL_TEXTURE = "textures/sky.jpg";
+
     // figures
     public static final String KING_TEXTURE_WHITE = "textures/figures/king_white.png";
     public static final String PAWN_TEXTURE_WHITE = "textures/figures/pawn_white.png";
@@ -91,6 +94,14 @@ public class Assets {
     public static final String G_BlACK_TEXTURE = "textures/letters/g_black.png";
     public static final String H_BlACK_TEXTURE = "textures/letters/h_black.png";
 
+    // menu
+    public static final String BACKGROUND_TEXTURE = "textures/menu/background.png";
+    public static final String PLAY_BUTTON_TEXTURE = "textures/menu/play_button.png";
+    public static final String EXIT_BUTTON_TEXTURE = "textures/menu/exit_button.png";
+
+    // game over screen
+    public static final String OVER_BACKGROUND_TEXTURE = "textures/game_over/over_background.jpg";
+
     public void load() {
         // load all assets
         loadGameplayAssets();
@@ -169,6 +180,11 @@ public class Assets {
         manager.load(P_F_BLACK_TEXTURE, Texture.class);
         manager.load(P_G_BLACK_TEXTURE, Texture.class);
         manager.load(P_H_BLACK_TEXTURE, Texture.class);
+        manager.load(BACKGROUND_TEXTURE, Texture.class);
+        manager.load(PLAY_BUTTON_TEXTURE, Texture.class);
+        manager.load(EXIT_BUTTON_TEXTURE, Texture.class);
+        manager.load(PANEL_TEXTURE, Texture.class);
+        manager.load(OVER_BACKGROUND_TEXTURE, Texture.class);
     }
 
     public void dispose() {

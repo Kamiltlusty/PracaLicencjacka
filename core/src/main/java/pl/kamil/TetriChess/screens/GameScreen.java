@@ -4,17 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import pl.kamil.TetriChess.Main;
 import pl.kamil.TetriChess.board_elements.BoardManager;
-import pl.kamil.TetriChess.board_elements.figures.Figure;
 import pl.kamil.TetriChess.drawing.DrawManager;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
-
-import java.util.Optional;
+import pl.kamil.TetriChess.resources.GlobalVariables;
 
 import static pl.kamil.TetriChess.resources.GlobalVariables.MIN_WORLD_HEIGHT;
 import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_WIDTH;
@@ -25,14 +24,19 @@ public class GameScreen implements Screen, InputProcessor {
     private final SpriteBatch batch;
     private final Assets assets;
     private final DrawManager drawManager;
+    private final Main main;
+
+    // panel background
+    private Texture panelBcg;
 
     // boards
     private BoardManager boardManager;
 
-    public GameScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets) {
+    public GameScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets, Main main) {
         this.gameFlow = gameFlow;
         this.batch = batch;
         this.assets = assets;
+        this.main = main;
 
         // set up the viewport
         viewport = new ExtendViewport(
@@ -42,6 +46,7 @@ public class GameScreen implements Screen, InputProcessor {
             0
         );
 
+        panelBcg = assets.manager.get(Assets.PANEL_TEXTURE);
         // create board
         boardManager = gameFlow.getBoardManager();
         this.drawManager = new DrawManager(assets, boardManager, batch, gameFlow);
@@ -62,8 +67,14 @@ public class GameScreen implements Screen, InputProcessor {
 
         // begin drawing
         batch.begin();
+        batch.draw(panelBcg,
+            8 * GlobalVariables.BOARD_FIELD_SIDE_LENGTH, 0,
+            panelBcg.getWidth(),
+            panelBcg.getHeight()
+        );
 
         drawManager.getChessboardDrawer().drawChessBoard();
+
         // draw 3x3 cube side
         drawManager.getCubesDrawer().drawMajorCube();
         // draw scaled cubes
@@ -163,7 +174,11 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         int transformedY = transformY(screenY);
-        gameFlow.onTouchUp(screenX, transformedY);
+        try {
+            gameFlow.onTouchUp(screenX, transformedY);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return false;
     }
 

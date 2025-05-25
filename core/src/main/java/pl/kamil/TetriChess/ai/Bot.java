@@ -5,6 +5,7 @@ import io.vavr.Tuple2;
 import pl.kamil.TetriChess.board_elements.BoardManager;
 import pl.kamil.TetriChess.board_elements.Team;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
+import pl.kamil.TetriChess.board_elements.figures.Pawn;
 import pl.kamil.TetriChess.board_elements.figures.Rook;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.gameplay.StateBeforeMoveRecord;
@@ -44,9 +45,9 @@ public class Bot {
             prepareForMoveExecution(bestFigure, bestMove._2);
             gameFlow.executeMove();
             gameFlow.prepare();
-            // should I check here is checkmate???? as it is in findBestMove or Minimax methods
-            setNewStateBeforeMoveRecord();
-        } else throw new RuntimeException("No available moves found");
+        } else {
+
+        }
     }
 
     public Tuple2<String, Vector2> findBestMove(StateBeforeMoveRecord beforeMoveRecord, int depth) {
@@ -55,6 +56,9 @@ public class Bot {
         int beta = Integer.MAX_VALUE;
         Tuple2<String, Vector2> bestMove = null;
         List<MoveDetails> legalMovesForMinimax = getLegalMovesForMinimax(beforeMoveRecord);
+        if (legalMovesForMinimax.isEmpty()) {
+            gameFlow.setGameOver(true);
+        }
         legalMovesForMinimax.sort((m1, m2) -> Float.compare(m2.getScore(), m1.getScore()));
 
         for (var moveDetails : legalMovesForMinimax) {
@@ -66,7 +70,7 @@ public class Bot {
 //                    resetFields(); is needed?
             // set new state as actual
             beforeMoveRecord = setNewStateBeforeMoveRecord();
-            gameFlow.checkCheckmate(beforeMoveRecord);
+            gameFlow.checkGameOver(beforeMoveRecord);
             // reset fields
             resetFields();
             // count result of evaluation
@@ -86,7 +90,7 @@ public class Bot {
                 stateBeforeMoveRecordDeque
                     .removeFirst()
                     .getActiveShape());
-            // reference needs has to be changed
+            //
             beforeMoveRecord = stateBeforeMoveRecordDeque.getFirst();
             undoLastMove(selectedFig, beforeMoveRecord);
 
@@ -111,14 +115,17 @@ public class Bot {
         }
 
         // decide whether to go back in stack or go deeper
-        if (depth == 0 || gameFlow.isCheckmate()) {
-            return evaluatePosition(beforeMoveRecord);
+        if (depth == 0 || gameFlow.isGameOver()) {
+            return evaluatePosition(beforeMoveRecord, depth);
         }
-        // chose are we maximizing the evaluation score
+        // choose are we maximizing the evaluation score
         if (isMaximizingPlayer) {
             // take smallest value because we are searching for the biggest for maximizer
             int maxEval = Integer.MIN_VALUE;
             List<MoveDetails> legalMovesForMinimax = getLegalMovesForMinimax(beforeMoveRecord);
+            if (legalMovesForMinimax.isEmpty()) {
+                gameFlow.setGameOver(true);
+            }
             legalMovesForMinimax.sort((m1, m2) -> Float.compare(m2.getScore(), m1.getScore()));
 
             for (var moveDetails : legalMovesForMinimax) {
@@ -130,7 +137,7 @@ public class Bot {
 //                    resetFields(); is needed?
                 // set new state as actual
                 beforeMoveRecord = setNewStateBeforeMoveRecord();
-                gameFlow.checkCheckmate(beforeMoveRecord);
+                gameFlow.checkGameOver(beforeMoveRecord);
                 // reset fields
                 resetFields();
                 // count result of evaluation
@@ -159,6 +166,9 @@ public class Bot {
         } else {
             int minEval = Integer.MAX_VALUE;
             List<MoveDetails> legalMovesForMinimax = getLegalMovesForMinimax(beforeMoveRecord);
+            if (legalMovesForMinimax.isEmpty()) {
+                gameFlow.setGameOver(true);
+            }
             legalMovesForMinimax.sort((m1, m2) -> Float.compare(m2.getScore(), m1.getScore()));
 
             for (var moveDetails : legalMovesForMinimax) {
@@ -170,7 +180,7 @@ public class Bot {
 //                    resetFields(); is needed?
                 // set new state as actual
                 beforeMoveRecord = setNewStateBeforeMoveRecord();
-                gameFlow.checkCheckmate(beforeMoveRecord);
+                gameFlow.checkGameOver(beforeMoveRecord);
                 // reset fields
                 resetFields();
                 // count result of evaluation
@@ -205,7 +215,7 @@ public class Bot {
             gameFlow.getCheckType(),
             gameFlow.isWhiteInCheck(),
             gameFlow.isBlackInCheck(),
-            gameFlow.isCheckmate(),
+            gameFlow.isGameOver(),
             boardManager,
             boardManager.getBoardUtils(),
             gameFlow.getActiveShape()
@@ -280,17 +290,24 @@ public class Bot {
         } else if (isExtendedCenter(finalFieldPosition)) {
             score += 1;
         }
+
         // giving check
-
-        // figure escapes from danger
-
-        // moving king to safer position
+//        if (gameFlow.isWhiteInCheck()) {
+//            score += 5;
+//
+////            // King should always be on board
+////            Figure KW = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+////            // is figure giving check close to king so it is more probably to checkmate
+////            if (Math.abs(boardManager.getSelectedFigure().getPosition().x - KW.getPosition().x) <= 1 ||
+////            Math.abs(boardManager.getSelectedFigure().getPosition().y - KW.getPosition().y) <= 1) {
+////                score += 20;
+////            }
+//
+//        }
 
         // pawn chaining
 
         // attack concentration
-
-        // freeing light figures by pawns (knight, bishop)
 
         return score;
     }
@@ -453,7 +470,7 @@ public class Bot {
         gameFlow.setWhiteInCheck(beforeMoveRecord.isWhiteInCheck());
         gameFlow.setBlackInCheck(beforeMoveRecord.isBlackInCheck());
         gameFlow.setCheckType(beforeMoveRecord.getCheckType());
-        gameFlow.setCheckmate(beforeMoveRecord.isCheckmate());
+        gameFlow.setGameOver(beforeMoveRecord.isGameOver());
         gameFlow.setActive(beforeMoveRecord.getActive());
         gameFlow.setActiveShape(beforeMoveRecord.getActiveShape());
         // set figure on initial position
@@ -475,12 +492,6 @@ public class Bot {
         boardManager.setCapturedFigureId(null);
         boardManager.setPromotedFigureId(null);
         boardManager.setSelectedFigureAsEmpty();
-    }
-
-    // this method checks position before bot analysis to calculate the beginning position evaluation
-    public void evaluateRootPosition() {
-        StateBeforeMoveRecord actualPosition = stateBeforeMoveRecordDeque.getFirst();
-        evaluationScoreRoot = evaluatePosition(actualPosition);
     }
 
 
@@ -537,11 +548,37 @@ public class Bot {
         if (boardManager.isPawnPromotion()) boardManager.setPromotion(true);
     }
 
-    public int evaluatePosition(StateBeforeMoveRecord beforeMoveRecord) {
+    public int evaluatePosition(StateBeforeMoveRecord beforeMoveRecord, int currentDepth) {
         int whiteScore = 0;
         int blackScore = 0;
 
+        if (gameFlow.isWhiteInCheck() && gameFlow.isGameOver()) {
+            blackScore += 10000 - currentDepth*10;
+            return whiteScore - blackScore;
+        }
+        if (gameFlow.isBlackInCheck() && gameFlow.isGameOver()) {
+            whiteScore += 10000 - currentDepth*10;
+            return whiteScore - blackScore;
+        }
+
+        if (gameFlow.isWhiteInCheck()) {
+            blackScore += 4;
+        }
+        if (gameFlow.isBlackInCheck()) {
+            whiteScore += 4;
+        }
+
         Map<Figure, String> board = beforeMoveRecord.getBoardState();
+        int blackFiguresValueSum = board.keySet().stream()
+            .filter(f -> f.getTeam() == Team.BLACK)
+            .mapToInt(Figure::getValue)
+            .sum();
+
+        int whiteFiguresValueSum = board.keySet().stream()
+            .filter(f -> f.getTeam() == Team.WHITE)
+            .mapToInt(Figure::getValue)
+            .sum();
+        int diff = whiteFiguresValueSum - blackFiguresValueSum;
 
         for (Map.Entry<Figure, String> entry : board.entrySet()) {
             Figure figure = entry.getKey();
@@ -557,26 +594,156 @@ public class Bot {
                 }
             }
 
-            // bonus: center control
+//            // bonus: figure is attacking fields around king
+            boolean isEndgame = boardManager.figuresList.size() <= 10;
+            if (isEndgame) {
+                if (figure.getTeam() == Team.BLACK && figure.getFigureId().charAt(0) != 'K') {
+                    Figure KW = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+                    if (isAttackOnKingArea(figure, KW, boardManager)) blackScore += 40;
+                } else if (figure.getTeam() == Team.WHITE && figure.getFigureId().charAt(0) != 'K') {
+                    Figure KB = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+                    if (isAttackOnKingArea(figure, KB, boardManager)) whiteScore += 40;
+                }
+            }
+
+
+            // bonus: center control by pawn bishop or knight
+            char fId = figure.getFigureId().charAt(0);
             if (isClassicCenter(position)) {
-                if (figure.getTeam() == Team.WHITE) whiteScore += 2;
-                else blackScore += 2;
+                if (figure.getTeam() == Team.WHITE && (fId == 'p' || fId == 'k' || fId == 'b')) whiteScore += 3;
+                else if (figure.getTeam() == Team.BLACK && (fId == 'p' || fId == 'k' || fId == 'b')) blackScore += 3;
             } else if (isExtendedCenter(position)) {
-                if (figure.getTeam() == Team.WHITE) whiteScore += 1;
-                else blackScore += 1;
+                if (figure.getTeam() == Team.WHITE && (fId == 'p' || fId == 'k' || fId == 'b')) whiteScore += 1;
+                else if (figure.getTeam() == Team.BLACK && (fId == 'p' || fId == 'k' || fId == 'b')) blackScore += 1;
             }
 
             // bonus: king safety
+            boolean isEndgameWithKing = board.size() <= 4;
             if (figure.getFigureId().charAt(0) == 'K') {
                 // keeping king on sides
-                if (position.x <= 1 || position.x >= 6) {
-                    if (figure.getTeam() == Team.WHITE) whiteScore += 2;
-                    else blackScore += 2;
+                if (!isEndgameWithKing) {
+                    if (position.x <= 1 || position.x >= 6) {
+                        if (figure.getTeam() == Team.WHITE) whiteScore += 20;
+                        else blackScore += 20;
+                    }
                 }
+                // attacking with king
+                if (isEndgameWithKing && diff < 0 && figure.getTeam() == Team.BLACK) {
+                    Figure KW = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+                    int dist = manhattanDistance(figure.getPosition(), KW.getPosition());
+                    blackScore += (5 - dist) * 10;
+
+                } else if (isEndgameWithKing && diff > 0 && figure.getTeam() == Team.WHITE) {
+                    Figure KB = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+                    int dist = manhattanDistance(figure.getPosition(), KB.getPosition());
+                    whiteScore += (5 - dist) * 10;
+                }
+            }
+
+            // bonus: pawn close to advancement
+            if (figure instanceof Pawn) {
+                int row = (int) position.y;
+                if (figure.getTeam() == Team.WHITE && row == 7) whiteScore += 100;
+                else if (figure.getTeam() == Team.BLACK && row == 0) blackScore += 100;
             }
         }
 
         return whiteScore - blackScore;
+    }
+
+    public int manhattanDistance(Vector2 a, Vector2 b) {
+        return (int) (Math.abs(a.x - b.x) + Math.abs(a.y - b.y));
+    }
+
+//    public int evaluatePosition(StateBeforeMoveRecord beforeMoveRecord, int depth) {
+//        int whiteScore = 0;
+//        int blackScore = 0;
+//
+//        Map<Figure, String> board = beforeMoveRecord.getBoardState();
+//
+//        for (Map.Entry<Figure, String> entry : board.entrySet()) {
+//            Figure figure = entry.getKey();
+//            Vector2 position = boardManager.getBoardUtils().findPositionByFieldSignature(entry.getValue());
+//            int value = figure.getValue();
+//
+//            if (figure.getFigureId().charAt(0) != 'K') {
+//                // base material value
+//                if (figure.getTeam() == Team.WHITE) {
+//                    whiteScore += value;
+//                } else {
+//                    blackScore += value;
+//                }
+//            }
+//
+//            // bonus: figure is attacking fields around king
+//            if (figure.getTeam() == Team.BLACK) {
+//                Figure KW = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+//                if (isAttackOnKingArea(figure, KW, boardManager)) blackScore += 10;
+//            } else {
+//                Figure KB = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+//                if (isAttackOnKingArea(figure, KB, boardManager)) whiteScore += 10;
+//            }
+//
+//            // bonus: center control
+//            if (isClassicCenter(position)) {
+//                if (figure.getTeam() == Team.WHITE) whiteScore += 2;
+//                else blackScore += 2;
+//            } else if (isExtendedCenter(position)) {
+//                if (figure.getTeam() == Team.WHITE) whiteScore += 1;
+//                else blackScore += 1;
+//            }
+//
+//            // bonus: king safety
+//            if (figure.getFigureId().charAt(0) == 'K') {
+//                // keeping king on sides
+//                if (position.x <= 1 || position.x >= 6) {
+//                    if (figure.getTeam() == Team.WHITE) whiteScore += 2;
+//                    else blackScore += 2;
+//                }
+//            }
+//
+//            // bonus: pawn close to advancement
+//            if (figure instanceof Pawn) {
+//                int row = (int) position.y;
+//                if (figure.getTeam() == Team.WHITE && row == 7) whiteScore += 50;
+//                else if (figure.getTeam() == Team.BLACK && row == 0) blackScore += 50;
+//            }
+//        }
+//        if (gameFlow.isWhiteInCheck()) {
+//            blackScore += 3;
+//        }
+//        if (gameFlow.isWhiteInCheck() && gameFlow.isGameOver()) {
+//            blackScore += 1000;
+//        }
+//
+//        return whiteScore - blackScore;
+//    }
+
+    private boolean isAttackOnKingArea(Figure selected, Figure king, BoardManager boardManager) {
+        Vector2 kingPos = king.getPosition();
+
+        // kings neighborhood
+        int[] dx = {-1, -1, -1, 0, 0, 1, 1, 1};
+        int[] dy = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+        List<Vector2> surrounding = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int x = (int) kingPos.x + dx[i];
+            int y = (int) kingPos.y + dy[i];
+
+            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                surrounding.add(new Vector2(x, y));
+            }
+        }
+        boolean underAttack = false;
+        for (Vector2 target : surrounding) {
+            if (selected.isMoveLegal(selected.getPosition(), target, selected, boardManager)) {
+                underAttack = true;
+                break;
+            }
+        }
+
+        return underAttack;
     }
 
 //    public int findBestMove() {

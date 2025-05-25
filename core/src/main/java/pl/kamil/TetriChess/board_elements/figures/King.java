@@ -186,7 +186,7 @@ public class King extends Figure {
 
     @Override
     public int getValue() {
-        return 1000;
+        return 0;
     }
 
     public Texture getFigureTexture() {

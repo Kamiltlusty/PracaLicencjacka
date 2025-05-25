@@ -4,8 +4,9 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
+import pl.kamil.TetriChess.screens.GameOverScreen;
 import pl.kamil.TetriChess.screens.GameScreen;
-import pl.kamil.TetriChess.side_panel.ShapesManager;
+import pl.kamil.TetriChess.screens.MenuScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
@@ -13,10 +14,13 @@ public class Main extends Game {
     public Assets assets;
 
     // screens
-    public GameScreen gameScreen;
+//    public GameScreen gameScreen;
+    public MenuScreen menuScreen;
+    public GameOverScreen gameOverScreen;
 
     // game
     public GameFlow gameFlow;
+    public GameScreen gameScreen;
 
     @Override
     public void create() {
@@ -28,10 +32,11 @@ public class Main extends Game {
         assets.manager.finishLoading();
 
         // initialize game
-        gameFlow = new GameFlow(assets);
+        gameFlow = new GameFlow(assets, batch, this);
         // initialize game screen
-        gameScreen = new GameScreen(gameFlow, batch, assets);
-        setScreen(gameScreen);
+//        gameScreen = new GameScreen(gameFlow, batch, assets);
+        menuScreen = new MenuScreen(gameFlow, batch, assets, this);
+        setScreen(menuScreen);
     }
 
 

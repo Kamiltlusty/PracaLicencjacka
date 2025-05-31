@@ -136,7 +136,7 @@ public class GameFlow {
             isOver();
             long start = System.currentTimeMillis();
             // bot analysis
-            bot.makeMoveAsBot(beforeMoveRecord, 4);
+            bot.makeMoveAsBot(beforeMoveRecord, 3);
             // set new state before next players move
             long end = System.currentTimeMillis();
 //            System.out.println("Czas: " + (end - start) + " ms");

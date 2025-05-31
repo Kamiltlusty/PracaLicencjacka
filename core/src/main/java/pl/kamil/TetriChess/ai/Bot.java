@@ -400,7 +400,10 @@ public class Bot {
 
         // if was promotion then in figures list we would have queen with id like QW1 or QB2 or QW2 ...
         // start checking if there are promotedPawns and selectedFig is pawn
-        if (!boardManager.getPromotedPawns().isEmpty() && selectedFig.getFigureId().charAt(0) == 'p') {
+        Optional<Figure> isPawnInPromoted = boardManager.getPromotedPawns().stream()
+            .filter(f -> selectedFig.getFigureId().equals(f.getFigureId()))
+            .findFirst();
+        if (isPawnInPromoted.isPresent()) {
             // check whether in figures list is a queen that is not in beforeMoveRecord boardState on board
             Optional<Figure> promotedToTrash = boardManager.getFiguresList().stream()
                 .filter(f -> f.getTeam().equals(beforeMoveRecord.getActive()))
@@ -412,12 +415,13 @@ public class Bot {
                                 fig.getFigureId().equals(f.getFigureId())
                         ))
                 .findFirst();
-            promotedToTrash.ifPresentOrElse(
-                f -> boardManager.getFiguresList().remove(f),
-                () -> {
-                    throw new RuntimeException("Should have found queen promoted from pawn");
-                }
-            );
+            if (promotedToTrash.isPresent()) {
+                Figure f = promotedToTrash.get();
+                boardManager.getFiguresList().remove(f);
+            }
+            else {
+                throw new RuntimeException("Should have found queen promoted from pawn");
+            }
             boardManager.getPromotedPawns().remove(selectedFig);
             boardManager.getFiguresList().add(selectedFig);
         }

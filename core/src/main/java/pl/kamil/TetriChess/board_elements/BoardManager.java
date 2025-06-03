@@ -63,10 +63,8 @@ public class BoardManager {
 
         // draw the chessboard
         fieldsSetup.setFieldsMap();
-        boolean standardSetup = true;
+        boolean standardSetup = false;
         // game always needs to have at least both kings on the board
-        // 6k1/5ppp/8/8/8/8/5PPP/5RK1
-        // "6{KB}1/5{p1B}{p2B}{p3B}/8/8/8/8/5{p1W}{p2W}{p3W}/5{rW}{KW}1";
 //        String fen = "6{KW}1/1{p1B}6/1{r1B}6}/5{KB}2/8/8/8/8";
 //        String fen = "3{b1W}4/6{b1B}1/1{r1B}6/5{r2W}2/1{k2W}6/{KW}7/6{KB}1/7{r1W}";
         String fen = "3{KW}4/1{p1B}6/8/5{KB}2/8/1{p1W}6/8/8";

@@ -15,11 +15,13 @@ public class MenuDrawer {
     // buttons textures
     private Texture playButton;
     private Texture exitButton;
+    private Texture settingsButton;
 
     // buttons rectangles
     private Rectangle pb;
-
     private Rectangle eb;
+    private Rectangle sb;
+
 
     public MenuDrawer(Assets assets, SpriteBatch batch) {
         this.assets = assets;
@@ -28,18 +30,25 @@ public class MenuDrawer {
         background = assets.manager.get(Assets.BACKGROUND_TEXTURE);
         playButton = assets.manager.get(Assets.PLAY_BUTTON_TEXTURE);
         exitButton = assets.manager.get(Assets.EXIT_BUTTON_TEXTURE);
+        settingsButton = assets.manager.get(Assets.EXIT_BUTTON_TEXTURE);
 
         this.pb = createPlayButton(playButton);
         this.eb = createExitButton(exitButton);
+        this.sb = createSettingsButton(settingsButton);
     }
 
     private Rectangle createPlayButton(Texture pbTexture) {
-        return new Rectangle(500, 300, pbTexture.getWidth(), pbTexture.getHeight());
+        return new Rectangle(420, 300, pbTexture.getWidth(), pbTexture.getHeight());
+    }
+
+    private Rectangle createSettingsButton(Texture ebTexture) {
+        return new Rectangle(640, 300, ebTexture.getWidth(), ebTexture.getHeight());
     }
 
     private Rectangle createExitButton(Texture ebTexture) {
-        return new Rectangle(760, 300, ebTexture.getWidth(), ebTexture.getHeight());
+        return new Rectangle(860, 300, ebTexture.getWidth(), ebTexture.getHeight());
     }
+
 
     public void drawBackground() {
         batch.draw(background,
@@ -62,11 +71,22 @@ public class MenuDrawer {
             eb.getHeight());
     }
 
+    public void drawSettingsButton() {
+        batch.draw(exitButton,
+            sb.x, sb.y,
+            sb.getWidth(),
+            sb.getHeight());
+    }
+
     public Rectangle getPlayButton() {
         return pb;
     }
 
     public Rectangle getExitButton() {
         return eb;
+    }
+
+    public Rectangle getSettingsButton() {
+        return sb;
     }
 }

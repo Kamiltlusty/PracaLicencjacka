@@ -1,46 +1,57 @@
 package pl.kamil.TetriChess.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import pl.kamil.TetriChess.Main;
 import pl.kamil.TetriChess.board_elements.Team;
-import pl.kamil.TetriChess.drawing.MenuDrawer;
+import pl.kamil.TetriChess.drawing.SettingsDrawer;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
+
 
 import static pl.kamil.TetriChess.resources.GlobalVariables.MIN_WORLD_HEIGHT;
 import static pl.kamil.TetriChess.resources.GlobalVariables.WORLD_WIDTH;
 
-public class MenuScreen implements Screen, InputProcessor {
+public class SettingsScreen implements Screen, InputProcessor {
     private final ExtendViewport viewport;
     private final SpriteBatch batch;
     private final Assets assets;
     private final GameFlow gameFlow;
-    private MenuDrawer menuDrawer;
-    private boolean touchDownPlay = false;
+    private SettingsDrawer settingsDrawer;
     private boolean touchDownExit = false;
-    private boolean touchDownSettings = false;
+    private final MenuScreen menuScreen;
     private final Main main;
-    private GameScreen gameScreen;
-    private SettingsScreen settingsScreen;
 
-    private Rectangle pb;
     private Rectangle eb;
-    private Rectangle sb;
 
-    public MenuScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets, Main main) {
+    // Scene2D UI
+    private Stage stage;
+    private Skin skin;
+    private Slider slider;
+    private CheckBox whitePlayerCheckBox;
+    private Label sliderLabel;
+
+    private int currentSliderValue = 3;
+    private boolean checkbox = true;
+
+    public SettingsScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets, MenuScreen menuScreen, Main main) {
         this.gameFlow = gameFlow;
         this.batch = batch;
         this.assets = assets;
+        this.menuScreen = menuScreen;
         this.main = main;
-        this.settingsScreen = new SettingsScreen(gameFlow, batch, assets, this, main);
-        this.menuDrawer = new MenuDrawer(assets, batch);
+        this.settingsDrawer = new SettingsDrawer(assets, batch);
 
         // set up the viewport
         viewport = new ExtendViewport(
@@ -50,17 +61,64 @@ public class MenuScreen implements Screen, InputProcessor {
             0
         );
 
-        this.pb = menuDrawer.getPlayButton();
-        this.eb = menuDrawer.getExitButton();
-        this.sb = menuDrawer.getSettingsButton();
-
+        this.eb = settingsDrawer.getExitButton();
     }
 
     @Override
     public void show() {
-        // process user input
-        Gdx.input.setInputProcessor(this);
+        stage = new Stage(viewport);
+        skin = new Skin(Gdx.files.internal("uiskin/uiskin.json"));
+
+        slider = new Slider(1, 6, 1, false, skin);
+        slider.setValue(currentSliderValue);
+
+        sliderLabel = new Label("Bot depth: " + (int) slider.getValue(), skin);
+        sliderLabel.setFontScale(0.9f);
+
+        whitePlayerCheckBox = new CheckBox("Play White", skin);
+        whitePlayerCheckBox.setChecked(checkbox);
+        whitePlayerCheckBox.getLabel().setFontScale(0.9f);
+
+        whitePlayerCheckBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                checkbox = whitePlayerCheckBox.isChecked();
+            }
+        });
+
+        slider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                currentSliderValue = (int) slider.getValue();
+                sliderLabel.setText("Bot depth: " + (int) slider.getValue());
+            }
+        });
+
+        Table table = new Table();
+        table.setFillParent(true);
+        table.center();
+        table.padTop(-170);
+        table.padLeft(435);
+        table.defaults().space(5);
+
+        table.add(sliderLabel).center();
+        table.row();
+        table.add(slider).width(80).center();
+        table.row();
+        table.add(whitePlayerCheckBox).center();
+
+
+        stage.addActor(table);
+        stage.getRoot().setScale(0.25f);
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(this);
+
+        Gdx.input.setInputProcessor(multiplexer);
     }
+
+
 
     @Override
     public void render(float v) {
@@ -72,13 +130,14 @@ public class MenuScreen implements Screen, InputProcessor {
         // begin drawing
         batch.begin();
 
-        menuDrawer.drawBackground();
-        menuDrawer.drawPlayButton();
-        menuDrawer.drawSettingsButton();
-        menuDrawer.drawExitButton();
+        settingsDrawer.drawBackground();
+        settingsDrawer.drawExitButton();
 
         // end drawing
         batch.end();
+
+        stage.act(v);
+        stage.draw();
     }
 
     public int transformY(int screenY) {
@@ -91,6 +150,8 @@ public class MenuScreen implements Screen, InputProcessor {
     public void resize(int width, int height) {
         // update the viewport with the new screen size
         viewport.update(width, height, true);
+        stage.getViewport().update(width, height, true);
+
     }
 
     @Override
@@ -131,13 +192,6 @@ public class MenuScreen implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
         int transformedY = transformY(y);
-        if (x >= pb.x && transformedY >= pb.y && x <= pb.x + pb.getWidth() && transformedY <= pb.y + pb.getHeight()) {
-            touchDownPlay = true;
-        }
-
-        if (x >= sb.x && transformedY >= sb.y && x <= sb.x + sb.getWidth() && transformedY <= sb.y + sb.getHeight()) {
-            touchDownSettings = true;
-        }
 
         if (x >= eb.x && transformedY >= eb.y && x <= eb.x + eb.getWidth() && transformedY <= eb.y + eb.getHeight()) {
             touchDownExit = true;
@@ -148,24 +202,10 @@ public class MenuScreen implements Screen, InputProcessor {
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
         try {
-            if (touchDownPlay) {
-                dispose();
-                int botDepth = settingsScreen.getSelectedLevel();
-                Team botTeam = settingsScreen.isWhitePlayerSelected();
-
-                gameScreen = new GameScreen(gameFlow, batch, assets, main, botTeam);
-                gameFlow.setBotTeam(botTeam);
-                gameFlow.setBotDepth(botDepth);
-                System.out.println("botDepth: " + botDepth);
-                main.setScreen(gameScreen);
-            } else if (touchDownExit) {
-                System.exit(0);
-            } else if (touchDownSettings) {
-                main.setScreen(settingsScreen);
+            if (touchDownExit) {
+                main.setScreen(menuScreen);
             }
         } finally {
-            touchDownPlay = false;
-            touchDownSettings = false;
             touchDownExit = false;
         }
         return false;
@@ -190,4 +230,21 @@ public class MenuScreen implements Screen, InputProcessor {
     public boolean scrolled(float v, float v1) {
         return false;
     }
+
+    public int getSelectedLevel() {
+        return (int) slider.getValue();
+    }
+
+    public void setSelectedLevel() {
+        slider.setValue(getSelectedLevel());
+    }
+
+    public Team isWhitePlayerSelected() {
+        if (whitePlayerCheckBox.isChecked()) {
+            return Team.BLACK;
+        } else {
+            return Team.WHITE;
+        }
+    }
+
 }

@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import pl.kamil.TetriChess.Main;
 import pl.kamil.TetriChess.board_elements.BoardManager;
+import pl.kamil.TetriChess.board_elements.Team;
 import pl.kamil.TetriChess.drawing.DrawManager;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.resources.Assets;
@@ -25,6 +26,7 @@ public class GameScreen implements Screen, InputProcessor {
     private final Assets assets;
     private final DrawManager drawManager;
     private final Main main;
+    private Team botTeam;
 
     // panel background
     private Texture panelBcg;
@@ -32,11 +34,12 @@ public class GameScreen implements Screen, InputProcessor {
     // boards
     private BoardManager boardManager;
 
-    public GameScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets, Main main) {
+    public GameScreen(GameFlow gameFlow, SpriteBatch batch, Assets assets, Main main, Team botTeam) {
         this.gameFlow = gameFlow;
         this.batch = batch;
         this.assets = assets;
         this.main = main;
+        this.botTeam = botTeam;
 
         // set up the viewport
         viewport = new ExtendViewport(
@@ -60,6 +63,12 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
+        try {
+            gameFlow.updateBotFirstMoveIfNeeded();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         ScreenUtils.clear(Color.BLACK);
 
 //        // set the sprite batch to use the camera

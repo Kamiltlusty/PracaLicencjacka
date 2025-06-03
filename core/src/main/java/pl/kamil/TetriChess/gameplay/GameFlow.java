@@ -36,6 +36,8 @@ public class GameFlow {
     private final Bot bot;
     private static Integer totalMovesCounter;
     private Main main;
+    private Team botTeam;
+    private int botDepth;
 
 
     public GameFlow(Assets assets, SpriteBatch batch, Main main) {
@@ -136,7 +138,7 @@ public class GameFlow {
             isOver();
             long start = System.currentTimeMillis();
             // bot analysis
-            bot.makeMoveAsBot(beforeMoveRecord, 3);
+            bot.makeMoveAsBot(beforeMoveRecord, botDepth);
             // set new state before next players move
             long end = System.currentTimeMillis();
 //            System.out.println("Czas: " + (end - start) + " ms");
@@ -205,6 +207,49 @@ public class GameFlow {
 
         return attackingFigure.isPresent();
     }
+
+    public void updateBotFirstMoveIfNeeded() throws InterruptedException {
+        if (totalMovesCounter != 0 || botTeam.equals(Team.BLACK)) return;
+
+        StateBeforeMoveRecord beforeMoveRecord = new StateBeforeMoveRecord(
+            getActive(),
+            getCheckType(),
+            isWhiteInCheck(),
+            isBlackInCheck(),
+            isGameOver(),
+            boardManager,
+            boardUtils,
+            activeShape
+        );
+
+        stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
+        bot.makeMoveAsBot(beforeMoveRecord, botDepth);
+
+        beforeMoveRecord = new StateBeforeMoveRecord(
+            getActive(),
+            getCheckType(),
+            isWhiteInCheck(),
+            isBlackInCheck(),
+            isGameOver(),
+            boardManager,
+            boardUtils,
+            activeShape
+        );
+        stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
+
+        checkGameOver(beforeMoveRecord);
+
+        boardManager.setCastling(false);
+        boardManager.setCapture(false);
+        boardManager.setPromotion(false);
+        boardManager.setCapturedFigureId(null);
+        boardManager.setPromotedFigureId(null);
+        boardManager.setSelectedFigureAsEmpty();
+        isOver();
+
+        totalMovesCounter++;
+    }
+
 
     private void isOver() throws InterruptedException {
         if (main.gameScreen != null) {
@@ -368,6 +413,10 @@ public class GameFlow {
         return activeShape;
     }
 
+    public void setBotDepth(int botDepth) {
+        this.botDepth = botDepth;
+    }
+
     public void prepare() {
         setActive();
         boardManager.setCastling(false);
@@ -462,5 +511,9 @@ public class GameFlow {
 
     public void setGameOver(boolean checkmate) {
         isGameOver = checkmate;
+    }
+
+    public void setBotTeam(Team botTeam) {
+        this.botTeam = botTeam;
     }
 }

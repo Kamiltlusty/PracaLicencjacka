@@ -30,7 +30,7 @@ public class MenuDrawer {
         background = assets.manager.get(Assets.BACKGROUND_TEXTURE);
         playButton = assets.manager.get(Assets.PLAY_BUTTON_TEXTURE);
         exitButton = assets.manager.get(Assets.EXIT_BUTTON_TEXTURE);
-        settingsButton = assets.manager.get(Assets.EXIT_BUTTON_TEXTURE);
+        settingsButton = assets.manager.get(Assets.SETTINGS_BUTTON_TEXTURE);
 
         this.pb = createPlayButton(playButton);
         this.eb = createExitButton(exitButton);
@@ -41,8 +41,8 @@ public class MenuDrawer {
         return new Rectangle(420, 300, pbTexture.getWidth(), pbTexture.getHeight());
     }
 
-    private Rectangle createSettingsButton(Texture ebTexture) {
-        return new Rectangle(640, 300, ebTexture.getWidth(), ebTexture.getHeight());
+    private Rectangle createSettingsButton(Texture sbTexture) {
+        return new Rectangle(640, 300, sbTexture.getWidth(), sbTexture.getHeight());
     }
 
     private Rectangle createExitButton(Texture ebTexture) {
@@ -72,7 +72,7 @@ public class MenuDrawer {
     }
 
     public void drawSettingsButton() {
-        batch.draw(exitButton,
+        batch.draw(settingsButton,
             sb.x, sb.y,
             sb.getWidth(),
             sb.getHeight());

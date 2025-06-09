@@ -157,6 +157,7 @@ public class MenuScreen implements Screen, InputProcessor {
                 gameFlow.setBotTeam(botTeam);
                 gameFlow.setBotDepth(botDepth);
                 System.out.println("botDepth: " + botDepth);
+                main.setGameScreen(gameScreen);
                 main.setScreen(gameScreen);
             } else if (touchDownExit) {
                 System.exit(0);

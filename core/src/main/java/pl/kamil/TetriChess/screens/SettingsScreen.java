@@ -119,7 +119,6 @@ public class SettingsScreen implements Screen, InputProcessor {
     }
 
 
-
     @Override
     public void render(float v) {
         ScreenUtils.clear(Color.BROWN);
@@ -232,7 +231,11 @@ public class SettingsScreen implements Screen, InputProcessor {
     }
 
     public int getSelectedLevel() {
-        return (int) slider.getValue();
+        if (slider == null) {
+            return 3;
+        } else {
+            return (int) slider.getValue();
+        }
     }
 
     public void setSelectedLevel() {
@@ -240,7 +243,7 @@ public class SettingsScreen implements Screen, InputProcessor {
     }
 
     public Team isWhitePlayerSelected() {
-        if (whitePlayerCheckBox.isChecked()) {
+        if (whitePlayerCheckBox == null || whitePlayerCheckBox.isChecked()) {
             return Team.BLACK;
         } else {
             return Team.WHITE;

@@ -2,6 +2,7 @@ package pl.kamil.TetriChess.board_elements;
 
 import com.badlogic.gdx.math.Vector2;
 import pl.kamil.TetriChess.board_elements.figures.Figure;
+import pl.kamil.TetriChess.board_elements.figures.King;
 import pl.kamil.TetriChess.board_elements.figures.Queen;
 import pl.kamil.TetriChess.gameplay.GameFlow;
 import pl.kamil.TetriChess.gameplay.StateBeforeMoveRecord;
@@ -67,6 +68,7 @@ public class BoardManager {
         // game always needs to have at least both kings on the board
 //        String fen = "6{KW}1/1{p1B}6/1{r1B}6}/5{KB}2/8/8/8/8";
 //        String fen = "3{b1W}4/6{b1B}1/1{r1B}6/5{r2W}2/1{k2W}6/{KW}7/6{KB}1/7{r1W}";
+//        String fen = "3{KW}4/8/8/5{KB}2/8/1{p1W}6/8/8";
         String fen = "3{KW}4/1{p1B}6/8/5{KB}2/8/1{p1W}6/8/8";
         if (standardSetup) {
             setFiguresInitially();
@@ -110,7 +112,7 @@ public class BoardManager {
         setOpponentFigures();
     }
 
-    public  void setFiguresWithFen(String fen) {
+    public void setFiguresWithFen(String fen) {
         figuresSetup.setupFromFEN(fen);
     }
 
@@ -188,6 +190,7 @@ public class BoardManager {
         if (foundFigureOptional.isPresent())
             foundFigure = foundFigureOptional.get();
 
+
         // check whether beating is legal
         if (foundFigure != null) {
             if (!selectedFigure.isBeatingLegal(
@@ -210,8 +213,14 @@ public class BoardManager {
             this
         )) return false;
 
+
         // check whether move is promotion
         isPromotion = isPawnPromotion();
+
+        // check is king moving into neighborhood of another king
+        if (selectedFigure instanceof King) {
+            if (areKingsSideBySide(beforeMoveRecord)) return false;
+        }
 
         // check whether move is exposing king to check
         if (isExposingKingToCheck(
@@ -254,18 +263,16 @@ public class BoardManager {
         if (selectedFigure.getTeam() == Team.BLACK && finalFieldPosition.y == 0) {
             promotedFigureId = selectedFigure.getFigureId();
             return true;
-        }
-        else if (selectedFigure.getTeam() == Team.WHITE && finalFieldPosition.y == 7) {
+        } else if (selectedFigure.getTeam() == Team.WHITE && finalFieldPosition.y == 7) {
             promotedFigureId = selectedFigure.getFigureId();
             return true;
-        }
-        else return false;
+        } else return false;
     }
 
     public List<Figure> isExposingCheck(Team active, StateBeforeMoveRecord beforeMoveRecord) {
         List<Figure> threateningFigures;
         if (active == Team.WHITE) {
-            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+            Figure whiteKing = getKing(true);
             threateningFigures = figuresList.stream()
                 .filter(f -> f.getTeam() == Team.BLACK)
                 .filter(f -> f.isMoveLegal(f.getPosition(), whiteKing.getPosition(), f, this))
@@ -275,7 +282,7 @@ public class BoardManager {
                 .filter(f -> f.isBeatingLegal(f.getPosition(), whiteKing.getPosition(), f, whiteKing, this, beforeMoveRecord, true))
                 .toList();
         } else {
-            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+            Figure blackKing = getKing(false);
             threateningFigures = figuresList.stream()
                 .filter(f -> f.getTeam() == Team.WHITE)
                 .filter(f -> f.isMoveLegal(f.getPosition(), blackKing.getPosition(), f, this))
@@ -286,6 +293,15 @@ public class BoardManager {
                 .toList();
         }
         return threateningFigures;
+    }
+
+    public boolean areSideBySide() {
+        Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+        Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+        float dx = Math.abs(whiteKing.getPosition().x - blackKing.getPosition().x);
+        float dy = Math.abs(whiteKing.getPosition().y - blackKing.getPosition().y);
+
+        return dx <= 1.0f && dy <= 1.0f;
     }
 
     private boolean isMoveCancelingCheck(StateBeforeMoveRecord beforeMoveRecord) {
@@ -357,8 +373,8 @@ public class BoardManager {
             List<Square1x1> list = activeShape.getSquare3x3().getSquares().values().stream().filter(v -> v.getTexture() != null).toList();
             for (var el : list) {
                 String signature = boardUtils.findFieldSignature(
-                    (int) (field.getPosition().y + el.getRectangle().y/SQUARE_1X1_SIDE),
-                    (int) (field.getPosition().x + el.getRectangle().x/SQUARE_1X1_SIDE));
+                    (int) (field.getPosition().y + el.getRectangle().y / SQUARE_1X1_SIDE),
+                    (int) (field.getPosition().x + el.getRectangle().x / SQUARE_1X1_SIDE));
                 Field fieldToBlock = getFieldsMap().get(signature);
                 fieldToBlock.setBlockedState(Field.BlockedState.BLOCKED);
             }
@@ -415,7 +431,7 @@ public class BoardManager {
     private List<Figure> isCancellingCheck(StateBeforeMoveRecord beforeMoveRecord) {
         List<Figure> threateningFigures;
         if (gameFlow.getActive() == Team.WHITE) {
-            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW") && f.getTeam() == Team.WHITE).findFirst().get();
+            Figure whiteKing = getKing(true);
             threateningFigures = figuresList.stream()
                 .filter(f -> f.getTeam() == Team.BLACK)
                 .filter(f -> f.isMoveLegal(f.getPosition(), whiteKing.getPosition(), f, this))
@@ -425,7 +441,7 @@ public class BoardManager {
                 .filter(f -> f.isBeatingLegal(f.getPosition(), whiteKing.getPosition(), f, whiteKing, this, beforeMoveRecord, true))
                 .toList();
         } else {
-            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB") && f.getTeam() == Team.BLACK).findFirst().get();
+            Figure blackKing = getKing(false);
             threateningFigures = figuresList.stream()
                 .filter(f -> f.getTeam() == Team.WHITE)
                 .filter(f -> f.isMoveLegal(f.getPosition(), blackKing.getPosition(), f, this))
@@ -442,7 +458,7 @@ public class BoardManager {
         simulateMove();
         List<Figure> threateningFigures;
         if (gameFlow.getActive() == Team.WHITE) {
-            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+            Figure blackKing = getKing(false);
             threateningFigures = figuresList.stream()
                 .filter(f -> f.getTeam() == Team.WHITE)
                 .filter(f -> !selectedFigure.getFigureId().equals(f.getFigureId()))
@@ -453,7 +469,7 @@ public class BoardManager {
                 .filter(f -> f.isBeatingLegal(f.getPosition(), blackKing.getPosition(), f, blackKing, this, beforeMoveRecord, true))
                 .toList();
         } else {
-            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW") && f.getTeam() == Team.WHITE).findFirst().get();
+            Figure whiteKing = getKing(true);
             threateningFigures = figuresList.stream()
                 .filter(f -> f.getTeam() == Team.BLACK)
                 .filter(f -> !selectedFigure.getFigureId().equals(f.getFigureId()))
@@ -468,11 +484,23 @@ public class BoardManager {
         return !threateningFigures.isEmpty();
     }
 
+    public Figure getKing(boolean isWhiteTeam) {
+        Figure king;
+        if (isWhiteTeam) {
+            Optional<Figure> wk = figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst();
+            king = wk.get();
+        } else {
+            Optional<Figure> bk = figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst();
+            king = bk.get();
+        }
+        return king;
+    }
+
     private boolean isSingleCheck(StateBeforeMoveRecord beforeMoveRecord) {
         // simulate new position
         simulateMove();
         if (gameFlow.getActive() == Team.WHITE) {
-            Figure blackKing = figuresList.stream().filter(f -> f.getFigureId().equals("KB")).findFirst().get();
+            Figure blackKing = getKing(false);
             // checking whether we can attack king in next move == is king in check by selected figure
             boolean isMoveLegal = selectedFigure.isMoveLegal(
                 selectedFigure.getPosition(),
@@ -486,7 +514,8 @@ public class BoardManager {
                 selectedFigure,
                 this);
             if (foundFigure.isPresent()) {
-                isPathToKingFree = foundFigure.get().getFigureId().equals("KB");}
+                isPathToKingFree = foundFigure.get().getFigureId().equals("KB");
+            }
             if (isMoveLegal && isPathToKingFree) {
                 // restore position before simulation i think it is better to be before setBlackInCheck to not change final state
                 undoSimulation(beforeMoveRecord);
@@ -494,7 +523,7 @@ public class BoardManager {
                 return true;
             }
         } else if (gameFlow.getActive() == Team.BLACK) {
-            Figure whiteKing = figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
+            Figure whiteKing = getKing(true);
             // checking whether we can attack king in next move == is king in check by selected figure
             boolean isMoveLegal = selectedFigure.isMoveLegal(
                 selectedFigure.getPosition(),
@@ -509,7 +538,8 @@ public class BoardManager {
                 selectedFigure,
                 this);
             if (foundFigure.isPresent()) {
-                isPathToKingFree = foundFigure.get().getFigureId().equals("KB");}
+                isPathToKingFree = foundFigure.get().getFigureId().equals("KB");
+            }
             if (isMoveLegal && isPathToKingFree) {
                 // restore position before simulation i think it is better to be before setBlackInCheck to not change final stated
                 undoSimulation(beforeMoveRecord);
@@ -531,6 +561,16 @@ public class BoardManager {
         }
         undoSimulation(beforeMoveRecord);
         return isExposing;
+    }
+
+    private boolean areKingsSideBySide(StateBeforeMoveRecord beforeMoveRecord) {
+        boolean areSideBySide = false;
+        simulateMove();
+        if (areSideBySide()) {
+            areSideBySide = true;
+        }
+        undoSimulation(beforeMoveRecord);
+        return areSideBySide;
     }
 
     public void moveFigureOverBoard(int screenX, float transformedY) {

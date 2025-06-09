@@ -14,7 +14,6 @@ public class Main extends Game {
     public Assets assets;
 
     // screens
-//    public GameScreen gameScreen;
     public MenuScreen menuScreen;
     public GameOverScreen gameOverScreen;
 
@@ -48,5 +47,9 @@ public class Main extends Game {
     @Override
     public void dispose() {
 
+    }
+
+    public void setGameScreen(GameScreen gameScreen) {
+        this.gameScreen = gameScreen;
     }
 }

@@ -98,6 +98,7 @@ public class Assets {
     public static final String BACKGROUND_TEXTURE = "textures/menu/background.png";
     public static final String PLAY_BUTTON_TEXTURE = "textures/menu/play_button.png";
     public static final String EXIT_BUTTON_TEXTURE = "textures/menu/exit_button.png";
+    public static final String SETTINGS_BUTTON_TEXTURE = "textures/menu/settings_button.png";
 
     // game over screen
     public static final String OVER_BACKGROUND_TEXTURE = "textures/game_over/over_background.jpg";
@@ -183,6 +184,7 @@ public class Assets {
         manager.load(BACKGROUND_TEXTURE, Texture.class);
         manager.load(PLAY_BUTTON_TEXTURE, Texture.class);
         manager.load(EXIT_BUTTON_TEXTURE, Texture.class);
+        manager.load(SETTINGS_BUTTON_TEXTURE, Texture.class);
         manager.load(PANEL_TEXTURE, Texture.class);
         manager.load(OVER_BACKGROUND_TEXTURE, Texture.class);
     }

@@ -254,16 +254,15 @@ public class GameFlow {
     private void isOver() throws InterruptedException {
         if (main.gameScreen != null) {
             main.gameScreen.render(0);
-            Thread.sleep(10000);
         }
         if (isGameOver && isBlackInCheck()) {
-            main.setScreen(new GameOverScreen(batch, assets, this, 0));
+            main.gameScreen.setExitGame(true);
             System.out.println("White wins ");
         } else if (isGameOver && isWhiteInCheck()) {
-            main.setScreen(new GameOverScreen(batch, assets, this, 1));
+            main.gameScreen.setExitGame(true);
             System.out.println("Black wins ");
         } else if (isGameOver) {
-            main.setScreen(new GameOverScreen(batch, assets, this, 2));
+            main.gameScreen.setExitGame(true);
             System.out.println("draw");
         }
     }
@@ -515,5 +514,9 @@ public class GameFlow {
 
     public void setBotTeam(Team botTeam) {
         this.botTeam = botTeam;
+    }
+
+    public Team getBotTeam() {
+        return botTeam;
     }
 }

@@ -290,23 +290,60 @@ public class Bot {
         }
 
         // giving check
-//        if (gameFlow.isWhiteInCheck()) {
-//            score += 5;
-//
-////            // King should always be on board
-////            Figure KW = boardManager.figuresList.stream().filter(f -> f.getFigureId().equals("KW")).findFirst().get();
-////            // is figure giving check close to king so it is more probably to checkmate
-////            if (Math.abs(boardManager.getSelectedFigure().getPosition().x - KW.getPosition().x) <= 1 ||
-////            Math.abs(boardManager.getSelectedFigure().getPosition().y - KW.getPosition().y) <= 1) {
-////                score += 20;
-////            }
-//
-//        }
-
-        // pawn chaining
-
-        // attack concentration
-
+        boardManager.simulateMove();
+        if (gameFlow.getActive() == Team.WHITE) {
+            Figure blackKing = boardManager.getKing(false);
+            // checking whether we can attack king in next move == is king in check by selected figure
+            boolean isMoveLegal = boardManager.getSelectedFigure().isMoveLegal(
+                boardManager.getSelectedFigure().getPosition(),
+                blackKing.getPosition(),
+                boardManager.getSelectedFigure(),
+                boardManager);
+            boolean isPathToKingFree = false;
+            Optional<Figure> foundFigure = boardManager.getSelectedFigure().isPathFigureFree(
+                boardManager.getSelectedFigure().getPosition(),
+                blackKing.getPosition(),
+                boardManager.getSelectedFigure(),
+                boardManager);
+            if (foundFigure.isPresent()) {
+                isPathToKingFree = foundFigure.get().getFigureId().equals("KB");
+            }
+            boolean isBeatingLegal = false;
+            if (boardManager.getSelectedFigure().isBeatingLegal(boardManager.getSelectedFigure().getPosition(), blackKing.getPosition(), boardManager.getSelectedFigure(), blackKing, boardManager, stateBeforeMoveRecordDeque.getFirst(), true)) {
+                isBeatingLegal = true;
+            }
+            if (isMoveLegal && isPathToKingFree && isBeatingLegal) {
+                // restore position before simulation i think it is better to be before setBlackInCheck to not change final state
+                score += 5;
+            }
+        } else if (gameFlow.getActive() == Team.BLACK) {
+            Figure whiteKing = boardManager.getKing(true);
+            // checking whether we can attack king in next move == is king in check by selected figure
+            boolean isMoveLegal = boardManager.getSelectedFigure().isMoveLegal(
+                boardManager.getSelectedFigure().getPosition(),
+                whiteKing.getPosition(),
+                boardManager.getSelectedFigure(),
+                boardManager);
+            // "KW".equals() boardManager reversed equality check is for purpose if method iPFF will return null the result will be false instead of NullPointerException
+            boolean isPathToKingFree = false;
+            Optional<Figure> foundFigure = boardManager.getSelectedFigure().isPathFigureFree(
+                boardManager.getSelectedFigure().getPosition(),
+                whiteKing.getPosition(),
+                boardManager.getSelectedFigure(),
+                boardManager);
+            if (foundFigure.isPresent()) {
+                isPathToKingFree = foundFigure.get().getFigureId().equals("KW");
+            }
+            boolean isBeatingLegal = false;
+            if (boardManager.getSelectedFigure().isBeatingLegal(boardManager.getSelectedFigure().getPosition(), whiteKing.getPosition(), boardManager.getSelectedFigure(), whiteKing, boardManager, stateBeforeMoveRecordDeque.getFirst(), true)) {
+                isBeatingLegal = true;
+            }
+            if (isMoveLegal && isPathToKingFree && isBeatingLegal) {
+                // restore position before simulation i think it is better to be before setBlackInCheck to not change final stated
+                score += 5;
+            }
+        }
+        boardManager.undoSimulation(stateBeforeMoveRecordDeque.getFirst());
         return score;
     }
 
@@ -390,50 +427,6 @@ public class Bot {
             boardManager.getFiguresList().add(selectedFig);
         }
 
-        // delete promoted figure and get back pawn if was promotion
-//        if (boardManager.isPromotion()) {
-//            // delete promoted figure from figures list
-//            boardManager.getFiguresList().stream()
-//                .filter(f -> f.getFigureId().equals(selectedFig.getFigureId()))
-//                .findFirst().ifPresentOrElse(
-//                    f -> boardManager.getFiguresList().remove(f),
-//                    () -> {
-//                        throw new RuntimeException("Should have found promoted queen");
-//                    }
-//                );
-//            // find pawn that was promoted and removed, before move record was hardly set so i can take value from there
-//            if (selectedFig.getTeam().equals(Team.WHITE)) {
-//                beforeMoveRecord.getBoardState().keySet().stream()
-//                    .filter(f -> f.getTeam().equals(Team.WHITE))
-//                    .filter(f -> f.getPosition().x == selectedFig.getPosition().x && f.getPosition().y == 7)
-//                    .findFirst().ifPresentOrElse(
-//                        f -> {
-//                            boardManager.promotedPawns.remove(f);
-//                            boardManager.figuresList.add(f);
-//                            f.setMoveCounter(f.getMoveCounter() - 1);
-//                            boardManager.setSelectedFigure(f);
-//                        },
-//                        () -> {
-//                            throw new RuntimeException("Should have found promoted pawn");
-//                        }
-//                    );
-//            } else {
-//                beforeMoveRecord.getBoardState().keySet().stream()
-//                    .filter(f -> f.getTeam().equals(Team.BLACK))
-//                    .filter(f -> f.getPosition().x == selectedFig.getPosition().x && f.getPosition().y == 1)
-//                    .findFirst().ifPresentOrElse(
-//                        f -> {
-//                            boardManager.promotedPawns.remove(f);
-//                            boardManager.figuresList.add(f);
-//                            f.setMoveCounter(f.getMoveCounter() - 1);
-//                            boardManager.setSelectedFigure(f);
-//                        },
-//                        () -> {
-//                            throw new RuntimeException("Should have found promoted pawn");
-//                        }
-//                    );
-//            }
-//        }
         // set game flow fields from before move state
         gameFlow.setWhiteInCheck(beforeMoveRecord.isWhiteInCheck());
         gameFlow.setBlackInCheck(beforeMoveRecord.isBlackInCheck());
@@ -521,11 +514,11 @@ public class Bot {
         int blackScore = 0;
 
         if (gameFlow.isWhiteInCheck() && gameFlow.isGameOver()) {
-            blackScore += 10000 - currentDepth * 10;
+            blackScore += 10000;
             return calcPosDiff(whiteScore, blackScore);
         }
         if (gameFlow.isBlackInCheck() && gameFlow.isGameOver()) {
-            whiteScore += 10000 - currentDepth * 10;
+            whiteScore += 10000;
             return calcPosDiff(whiteScore, blackScore);
         }
 

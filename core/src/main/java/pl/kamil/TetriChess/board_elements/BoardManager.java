@@ -64,12 +64,15 @@ public class BoardManager {
 
         // draw the chessboard
         fieldsSetup.setFieldsMap();
-        boolean standardSetup = false;
+        boolean standardSetup = true;
         // game always needs to have at least both kings on the board
 //        String fen = "6{KW}1/1{p1B}6/1{r1B}6}/5{KB}2/8/8/8/8";
 //        String fen = "3{b1W}4/6{b1B}1/1{r1B}6/5{r2W}2/1{k2W}6/{KW}7/6{KB}1/7{r1W}";
 //        String fen = "3{KW}4/8/8/5{KB}2/8/1{p1W}6/8/8";
-        String fen = "3{KW}4/1{p1B}6/8/5{KB}2/8/1{p1W}6/8/8";
+//        String fen = "3{KB}4/8/8/5{KW}2/8/1{p1B}6/8/8";
+//        String fen = "3{KW}4/1{p1B}6/8/5{KB}2/8/1{p1W}6/8/8";
+        String fen = "3{KB}4/1{p1W}6/8/5{KW}2/8/1{p1B}6/8/8";
+//        String fen = "7{KW}/8/6{KB}1/8/8/{QW1}7/8/8";
         if (standardSetup) {
             setFiguresInitially();
         } else setFiguresWithFen(fen);
@@ -315,7 +318,7 @@ public class BoardManager {
         return isCancelling;
     }
 
-    private void undoSimulation(StateBeforeMoveRecord beforeMoveRecord) {
+    public void undoSimulation(StateBeforeMoveRecord beforeMoveRecord) {
         // restore position (before simulation)
         selectedFigure.setPosition(
             initialFieldPosition.x,
@@ -381,7 +384,7 @@ public class BoardManager {
         }
     }
 
-    private void simulateMove() {
+    public void simulateMove() {
         if (isPromotion) {
             Team active = gameFlow.getActive();
             Vector2 pawnPositionBeforePromotion = selectedFigure.getPosition();
@@ -516,7 +519,11 @@ public class BoardManager {
             if (foundFigure.isPresent()) {
                 isPathToKingFree = foundFigure.get().getFigureId().equals("KB");
             }
-            if (isMoveLegal && isPathToKingFree) {
+            boolean isBeatingLegal = false;
+            if (selectedFigure.isBeatingLegal(selectedFigure.getPosition(), blackKing.getPosition(), selectedFigure, blackKing, this, beforeMoveRecord, true)) {
+                isBeatingLegal = true;
+            }
+            if (isMoveLegal && isPathToKingFree && isBeatingLegal) {
                 // restore position before simulation i think it is better to be before setBlackInCheck to not change final state
                 undoSimulation(beforeMoveRecord);
                 gameFlow.setBlackInCheck(true);
@@ -538,9 +545,13 @@ public class BoardManager {
                 selectedFigure,
                 this);
             if (foundFigure.isPresent()) {
-                isPathToKingFree = foundFigure.get().getFigureId().equals("KB");
+                isPathToKingFree = foundFigure.get().getFigureId().equals("KW");
             }
-            if (isMoveLegal && isPathToKingFree) {
+            boolean isBeatingLegal = false;
+            if (selectedFigure.isBeatingLegal(selectedFigure.getPosition(), whiteKing.getPosition(), selectedFigure, whiteKing, this, beforeMoveRecord, true)) {
+                isBeatingLegal = true;
+            }
+            if (isMoveLegal && isPathToKingFree && isBeatingLegal) {
                 // restore position before simulation i think it is better to be before setBlackInCheck to not change final stated
                 undoSimulation(beforeMoveRecord);
                 gameFlow.setWhiteInCheck(true);

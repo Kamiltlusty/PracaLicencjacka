@@ -37,6 +37,7 @@ public class GameScreen implements Screen, InputProcessor {
     private FrameBuffer frameBuffer;
     private Texture frozenBoardTexture;
     private boolean hasFrozenFrame = false;
+    private int winner;
 
     // panel background
     private Texture panelBcg;
@@ -128,19 +129,38 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void drawWinnerMessage() {
-        font.getData().setScale(3);
+        BitmapFont resultFont = new BitmapFont();
+        BitmapFont escFont = new BitmapFont();
 
-        String message = "\nClick ESC button, to end the game.";
-        GlyphLayout layout = new GlyphLayout(font, message);
+        resultFont.getData().setScale(4);
+        escFont.getData().setScale(2);
 
-        float x = (Gdx.graphics.getWidth() - layout.width) / 2;
-        float y = (Gdx.graphics.getHeight() + layout.height) / 2;
+        int result = winner;
 
-        font.setColor(Color.BLACK);
-        font.draw(batch, layout, x + 2, y - 2);
+        String resultMessage = switch (result) {
+            case 0 -> "White wins!";
+            case 1 -> "Black wins!";
+            case 2 -> "Draw!";
+            default -> "";
+        };
 
-        font.setColor(Color.WHITE);
-        font.draw(batch, layout, x, y);
+        String escMessage = "Press ESC button to end the game.";
+
+        GlyphLayout resultLayout = new GlyphLayout(resultFont, resultMessage);
+        GlyphLayout escLayout = new GlyphLayout(escFont, escMessage);
+
+        float centerX = Gdx.graphics.getWidth() / 2f;
+        float resultY = (Gdx.graphics.getHeight() / 2f) + resultLayout.height;
+        float escY = resultY - resultLayout.height - 30;
+
+
+        resultFont.setColor(Color.WHITE);
+        resultFont.draw(batch, resultLayout, centerX - resultLayout.width / 2, resultY);
+
+        escFont.setColor(Color.BLACK);
+        escFont.draw(batch, escLayout, centerX - escLayout.width / 2 + 2, escY - 2);
+        escFont.setColor(Color.WHITE);
+        escFont.draw(batch, escLayout, centerX - escLayout.width / 2, escY);
     }
 
     private void freezeFrame() {
@@ -296,5 +316,13 @@ public class GameScreen implements Screen, InputProcessor {
 
     public void setExitGame(boolean exitGame) {
         this.exitGame = exitGame;
+    }
+
+    public int getWinner() {
+        return winner;
+    }
+
+    public void setWinner(int winner) {
+        this.winner = winner;
     }
 }

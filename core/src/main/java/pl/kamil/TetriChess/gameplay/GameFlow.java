@@ -237,16 +237,6 @@ public class GameFlow {
         );
         stateBeforeMoveRecordDeque.addFirst(beforeMoveRecord);
 
-        checkGameOver(beforeMoveRecord);
-
-        boardManager.setCastling(false);
-        boardManager.setCapture(false);
-        boardManager.setPromotion(false);
-        boardManager.setCapturedFigureId(null);
-        boardManager.setPromotedFigureId(null);
-        boardManager.setSelectedFigureAsEmpty();
-        isOver();
-
         totalMovesCounter++;
     }
 
@@ -257,12 +247,15 @@ public class GameFlow {
         }
         if (isGameOver && isBlackInCheck()) {
             main.gameScreen.setExitGame(true);
+            main.gameScreen.setWinner(0);
             System.out.println("White wins ");
         } else if (isGameOver && isWhiteInCheck()) {
             main.gameScreen.setExitGame(true);
+            main.gameScreen.setWinner(1);
             System.out.println("Black wins ");
         } else if (isGameOver) {
             main.gameScreen.setExitGame(true);
+            main.gameScreen.setWinner(2);
             System.out.println("draw");
         }
     }
@@ -312,6 +305,33 @@ public class GameFlow {
             }
         }
         if (!foundValidMove) {
+            if (getActive() == Team.WHITE) {
+                Figure whiteKing = boardManager.getKing(true);
+                if (!boardManager.figuresList.stream()
+                    .filter(f -> f.getTeam() == Team.BLACK)
+                    .filter(f -> f.isMoveLegal(f.getPosition(), whiteKing.getPosition(), f, boardManager))
+                    .filter(f -> f.isPathFigureFree(f.getPosition(), whiteKing.getPosition(), f, boardManager)
+                        .map(fig -> fig.getFigureId().equals("KW"))
+                        .orElse(false))
+                    .filter(f -> f.isBeatingLegal(f.getPosition(), whiteKing.getPosition(), f, whiteKing, boardManager, beforeMoveRecord, true))
+                    .toList().isEmpty()) {
+                    setWhiteInCheck(true);
+                    setBlackInCheck(false);
+                }
+            } else {
+                Figure blackKing = boardManager.getKing(false);
+                if(!boardManager.figuresList.stream()
+                    .filter(f -> f.getTeam() == Team.WHITE)
+                    .filter(f -> f.isMoveLegal(f.getPosition(), blackKing.getPosition(), f, boardManager))
+                    .filter(f -> f.isPathFigureFree(f.getPosition(), blackKing.getPosition(), f, boardManager)
+                        .map(fig -> fig.getFigureId().equals("KB"))
+                        .orElse(false))
+                    .filter(f -> f.isBeatingLegal(f.getPosition(), blackKing.getPosition(), f, blackKing, boardManager, beforeMoveRecord, true))
+                    .toList().isEmpty()) {
+                    setBlackInCheck(true);
+                    setWhiteInCheck(false);
+                }
+            }
             isGameOver = true;
         }
     }

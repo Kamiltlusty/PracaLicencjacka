@@ -246,7 +246,6 @@ public class Bot {
                         score
                     ));
                 }
-                // i should check whether i need to reset fields here
                 boardManager.setCastling(false);
                 boardManager.setCapture(false);
                 boardManager.setPromotion(false);

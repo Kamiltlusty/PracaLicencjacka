@@ -268,7 +268,11 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (screenX >= 8 * GlobalVariables.BOARD_FIELD_SIDE_LENGTH) {
+            return false;
+        }
         int transformedY = transformY(screenY);
+
         gameFlow.onTouchDown(screenX, transformedY);
         return false;
     }

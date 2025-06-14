@@ -183,31 +183,6 @@ public class GameFlow {
         touchUpOccurred = false;
     }
 
-    private boolean isBlockedFigureAttackingKing() {
-        List<Field> blockedFields = boardManager.getFieldsMap().values().stream()
-            .filter(f -> f.getBlockedState().equals(Field.BlockedState.BLOCKED))
-            .toList();
-        Set<Vector2> blockedPositions = blockedFields.stream()
-            .map(f -> new Vector2(f.getPosition().x, f.getPosition().y))
-            .collect(Collectors.toSet());
-
-        List<Figure> blockedFigures = boardManager.getFiguresList().stream()
-            .filter(f -> !f.getTeam().equals(getActive()))
-            .filter(f -> blockedPositions.contains(f.getPosition()))
-            .toList();
-
-        Figure myKing = boardManager.getFiguresList().stream().filter(
-                f -> f.getFigureId().charAt(0) == 'K'
-            ).filter(f -> f.getTeam().equals(getActive()))
-            .findFirst().get();
-
-        Optional<Figure> attackingFigure = blockedFigures.stream()
-            .filter(f -> f.isPathFigureFree(f.getPosition(), myKing.getPosition(), f, boardManager).isPresent())
-            .findFirst();
-
-        return attackingFigure.isPresent();
-    }
-
     public void updateBotFirstMoveIfNeeded() throws InterruptedException {
         if (totalMovesCounter != 0 || botTeam.equals(Team.BLACK)) return;
 

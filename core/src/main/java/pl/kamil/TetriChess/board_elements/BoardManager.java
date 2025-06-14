@@ -70,8 +70,8 @@ public class BoardManager {
 //        String fen = "3{b1W}4/6{b1B}1/1{r1B}6/5{r2W}2/1{k2W}6/{KW}7/6{KB}1/7{r1W}";
 //        String fen = "3{KW}4/8/8/5{KB}2/8/1{p1W}6/8/8";
 //        String fen = "3{KB}4/8/8/5{KW}2/8/1{p1B}6/8/8";
-//        String fen = "3{KW}4/1{p1B}6/8/5{KB}2/8/1{p1W}6/8/8";
-        String fen = "3{KB}4/1{p1W}6/8/5{KW}2/8/1{p1B}6/8/8";
+        String fen = "3{KW}4/1{p1B}6/8/5{KB}2/8/1{p1W}6/8/8";
+//        String fen = "3{KB}4/1{p1W}6/8/5{KW}2/8/1{p1B}6/8/8";
 //        String fen = "7{KW}/8/6{KB}1/8/8/{QW1}7/8/8";
         if (standardSetup) {
             setFiguresInitially();

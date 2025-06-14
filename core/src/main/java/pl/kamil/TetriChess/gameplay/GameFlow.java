@@ -317,8 +317,11 @@ public class GameFlow {
                     .toList().isEmpty()) {
                     setWhiteInCheck(true);
                     setBlackInCheck(false);
+                } else {
+                    setBlackInCheck(false);
+                    setWhiteInCheck(false);
                 }
-            } else {
+            } else if (getActive() == Team.BLACK){
                 Figure blackKing = boardManager.getKing(false);
                 if(!boardManager.figuresList.stream()
                     .filter(f -> f.getTeam() == Team.WHITE)
@@ -329,6 +332,9 @@ public class GameFlow {
                     .filter(f -> f.isBeatingLegal(f.getPosition(), blackKing.getPosition(), f, blackKing, boardManager, beforeMoveRecord, true))
                     .toList().isEmpty()) {
                     setBlackInCheck(true);
+                    setWhiteInCheck(false);
+                } else {
+                    setBlackInCheck(false);
                     setWhiteInCheck(false);
                 }
             }
